@@ -2,24 +2,27 @@
   CAMUSAT TALK — application interne de prise de parole (Camusat Sénégal)
   Voir README.md à la racine du dépôt pour le contexte complet.
 
-  ⚠️ Ce fichier a été conçu pour tourner comme "Claude Artifact" : les appels
-  window.claude.use("db" | "downloads" | "user") ne fonctionnent QUE lorsque
-  cette page est ouverte via une session Claude (elle héberge la page et lui
-  accorde ces capacités à l'exécution). Ouvert ailleurs (double-clic local,
-  GitHub Pages, un autre hébergeur...), window.claude n'existe pas : le code
-  bascule sur un stockage local vide en mémoire (voir LOCAL_FALLBACK plus bas,
-  volontairement sans aucune proposition d'exemple) et les fonctions suivantes
-  sont indisponibles : enregistrement partagé des propositions, export
-  CSV/Excel, distinction propriétaire/éditeur. Détails et pistes d'évolution
-  dans README.md.
+  Cette version fonctionne de façon autonome (GitHub Pages, ou n'importe quel
+  hébergeur statique) : le stockage des propositions passe par Supabase
+  (voir SUPABASE_URL / SUPABASE_ANON_KEY dans le script plus bas), pas par les
+  capacités d'un Claude Artifact — n'importe qui avec le lien peut proposer un
+  sujet, sans compte d'aucune sorte.
 
-  Aucune information sensible n'est stockée dans ce fichier. La constante
-  ADMIN_CODE ci-dessous est un simple code d'accès d'interface (pas un secret
-  ni une clé API) : il est visible par quiconque lit ce fichier, comme tout
-  code présent dans une page web statique. Change-le avant toute diffusion
-  large et ne t'en sers pas comme unique protection de données sensibles.
+  La clé SUPABASE_ANON_KEY ci-dessous est une clé "publishable" : elle est
+  conçue pour être publique et visible dans le code d'une page (comme
+  n'importe quelle clé côté client), et la vraie protection vient des
+  policies de sécurité (RLS) définies sur la table dans Supabase — voir
+  README.md pour le détail. Ne remplace jamais cette valeur par une clé
+  secrète/"service_role" : celle-ci donnerait un accès total à la base à
+  quiconque lit cette page.
+
+  La constante ADMIN_CODE plus bas est, elle, un simple code d'accès
+  d'interface pour le Dashboard (pas un mécanisme de sécurité réel) : change-le
+  avant toute diffusion large et ne t'en sers pas comme unique protection de
+  données sensibles.
 -->
 <title>CAMUSAT TALK</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <meta name="description" content="Programme interne de prise de parole, de partage d'expérience et de développement des compétences chez Camusat Sénégal.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -296,10 +299,10 @@
     {id:"programmee", label:"Présentation programmée", pill:"pill-programmee"},
     {id:"realisee", label:"Présentation réalisée", pill:"pill-realisee"}
   ];
-  var DURATIONS = ["15 minutes","20 minutes","30 minutes","45 minutes","1 heure","Autre (à préciser)"];
-  // Code d'accès du Dashboard : une commodité d'interface, pas un secret (visible en clair
-  // dans ce fichier). Change cette valeur avant toute diffusion large de l'application.
-  // Le vrai contrôle d'accès reste les droits de partage de l'Artifact (voir README.md).
+  var DURATIONS = ["5 minutes","7 minutes","12 minutes","15 minutes","20 minutes","30 minutes","45 minutes","1 heure","Autre (à préciser)"];
+  // Code d'accès du Dashboard : une commodité d'interface, pas un vrai mécanisme
+  // de sécurité (visible en clair dans ce fichier, comme tout code d'une page
+  // statique). Change cette valeur avant toute diffusion large de l'application.
   var ADMIN_CODE = "CAMUSAT2026";
 
   function themeById(id){ return THEMES.find(function(t){return t.id===id}) || THEMES[THEMES.length-1]; }
@@ -332,23 +335,48 @@
 
   /* ============================= STATE ============================= */
   var state = {
-    db: null,
-    downloads: null,
-    userCap: null,
-    canEdit: false,
-    isOwner: false,
     dbAvailable: false,
     items: [],
-    unsub: null,
     adminUnlocked: false,
     filters: { theme: "", status: "", q: "" },
-    lastSubmitted: null
+    lastSubmitted: null,
+    confirmDeletes: {} /* id -> timestamp until which the delete button stays armed, survives re-renders */
   };
 
-  /* local fallback (used only if the shared db capability is unavailable in this view).
-     Kept empty on purpose: no example proposals ship with the app anymore. */
+  /* Stockage : Supabase (base de données partagée, accessible sans compte
+     d'aucune sorte). Secours en mémoire uniquement si le client Supabase ne
+     peut pas s'initialiser (script bloqué, projet mal configuré...) — vide
+     par construction, aucune donnée d'exemple n'est embarquée. */
   var LOCAL_FALLBACK = [];
 
+  // Clé "publishable" : conçue pour être publique, protégée côté serveur par
+  // les policies RLS de la table (voir README.md). Ne jamais remplacer par
+  // une clé "secret"/"service_role" ici : elle donnerait un accès total,
+  // sans protection, à quiconque lit le code de cette page.
+  var SUPABASE_URL = "https://zisitmonkozxnjlioaga.supabase.co";
+  var SUPABASE_ANON_KEY = "sb_publishable__OBjEQkl9XlL_weU4nsgYw_VDdUkuLP";
+  var SUPABASE_POLL_MS = 15000;
+
+  // Correspondance entre les noms de champs utilisés dans l'app (camelCase)
+  // et les colonnes de la table "propositions" dans Supabase (snake_case).
+  var FIELD_MAP = {
+    presenterName:"presenter_name", presenterRole:"presenter_role", presenterEmail:"presenter_email",
+    title:"title", description:"description", theme:"theme",
+    mentorName:"mentor_name", mentorDept:"mentor_dept", objective:"objective",
+    duration:"duration", desiredDate:"desired_date", status:"status"
+  };
+  function toDbRow(v){
+    var out = {};
+    Object.keys(FIELD_MAP).forEach(function(k){ if(v[k]!==undefined) out[FIELD_MAP[k]] = v[k]; });
+    return out;
+  }
+  function fromDbRow(r){
+    var out = { id:r.id, createdAt:r.created_at };
+    Object.keys(FIELD_MAP).forEach(function(k){ out[k] = r[FIELD_MAP[k]]; });
+    return out;
+  }
+
+  var sb = null;
 
   /* ============================= TOASTS ============================= */
   function toast(title, body, isError){
@@ -360,7 +388,7 @@
     setTimeout(function(){ el.style.transition="opacity .25s,transform .25s"; el.style.opacity="0"; el.style.transform="translateY(-6px)"; setTimeout(function(){ el.remove(); }, 260); }, 4200);
   }
 
-  /* ============================= DB LAYER ============================= */
+  /* ============================= DB LAYER (Supabase) ============================= */
   function itemsSorted(){
     var arr = state.items.slice();
     arr.sort(function(a,b){ return (b.createdAt||"").localeCompare(a.createdAt||""); });
@@ -368,40 +396,41 @@
   }
 
   function initDb(){
-    if(!window.claude || typeof window.claude.use !== "function"){
-      state.items = LOCAL_FALLBACK; render(); return;
-    }
-    Promise.all([window.claude.use("db"), window.claude.use("downloads"), window.claude.use("user")]).then(function(res){
-      state.db = res[0]; state.downloads = res[1]; state.userCap = res[2];
-      if(!state.db){ state.items = LOCAL_FALLBACK; render(); return; }
-      state.dbAvailable = true;
-      if(state.userCap){
-        Promise.all([state.userCap.canEdit(), state.userCap.isOwner()]).then(function(r){
-          state.canEdit = r[0]; state.isOwner = r[1];
-          if(state.canEdit || state.isOwner){ state.adminUnlocked = true; }
-          render();
-        }).catch(function(){});
+    try{
+      if(window.supabase && typeof window.supabase.createClient === "function"){
+        sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        state.dbAvailable = true;
+        fetchAll();
+        setInterval(fetchAll, SUPABASE_POLL_MS);
+        return;
       }
-      var col = state.db.collection("propositions");
-      state.unsub = col.onSnapshot(function(snap){
-        state.items = snap.docs.map(function(d){ var v = d.data()||{}; v.id = d.id; return v; });
-        render();
-      }, function(err){
-        console.warn("db onSnapshot error", err);
-        if(!state.items.length){ state.items = LOCAL_FALLBACK; }
-        render();
-      });
-    }).catch(function(){ state.items = LOCAL_FALLBACK; render(); });
+    }catch(e){ console.warn("Supabase init failed", e); }
+    state.items = LOCAL_FALLBACK;
+    render();
+  }
+
+  function fetchAll(){
+    if(!sb) return;
+    sb.from("propositions").select("*").order("created_at", {ascending:false}).then(function(res){
+      if(res.error){ console.warn("Supabase select error", res.error); return; }
+      state.items = (res.data||[]).map(fromDbRow);
+      render();
+    });
   }
 
   function createProposition(data, cb){
     data.status = "attente";
-    data.createdAt = new Date().toISOString();
-    if(state.dbAvailable && state.db){
-      state.db.collection("propositions").add(data).then(function(){ cb(true); })
-        .catch(function(e){ console.warn(e); cb(false, e); });
+    if(sb){
+      var row = toDbRow(data);
+      row.created_at = new Date().toISOString();
+      sb.from("propositions").insert([row]).then(function(res){
+        if(res.error){ cb(false, res.error); return; }
+        fetchAll();
+        cb(true);
+      });
     } else {
       data.id = uid();
+      data.createdAt = new Date().toISOString();
       LOCAL_FALLBACK.unshift(data);
       state.items = LOCAL_FALLBACK;
       cb(true);
@@ -409,9 +438,10 @@
   }
 
   function updateProposition(id, patch){
-    if(state.dbAvailable && state.db){
-      state.db.collection("propositions").doc(id).update(patch).catch(function(e){
-        toast("Modification impossible", (e && e.message) || "Réessayez dans un instant.", true);
+    if(sb){
+      sb.from("propositions").update(toDbRow(patch)).eq("id", id).then(function(res){
+        if(res.error){ toast("Modification impossible", res.error.message || "Réessayez dans un instant.", true); return; }
+        fetchAll();
       });
     } else {
       var it = LOCAL_FALLBACK.find(function(x){ return x.id===id; });
@@ -420,9 +450,12 @@
   }
 
   function deleteProposition(id, cb){
-    if(state.dbAvailable && state.db){
-      state.db.collection("propositions").doc(id).delete().then(function(){ cb(true); })
-        .catch(function(e){ cb(false, e); });
+    if(sb){
+      sb.from("propositions").delete().eq("id", id).then(function(res){
+        if(res.error){ cb(false, res.error); return; }
+        fetchAll();
+        cb(true);
+      });
     } else {
       var idx = LOCAL_FALLBACK.findIndex(function(x){ return x.id===id; });
       if(idx>-1) LOCAL_FALLBACK.splice(idx,1);
@@ -808,6 +841,11 @@
     '</section>';
   }
 
+  function isDeleteArmed(id){
+    var exp = state.confirmDeletes[id];
+    return !!exp && exp > Date.now();
+  }
+
   function renderDashRows(list){
     if(!list.length){ return '<tr><td colspan="7" style="text-align:center;color:var(--text-soft);padding:40px 16px">Aucune proposition pour ce filtre.</td></tr>'; }
     return list.map(function(it){
@@ -820,7 +858,7 @@
         '<td><input class="mentor-input" data-id="'+esc(it.id)+'" value="'+esc(it.mentorName||"")+'" style="width:140px;padding:6px 8px;font-size:12.5px"></td>'+
         '<td class="cell-sub">'+fmtDate(it.desiredDate)+'</td>'+
         '<td><select class="mini-select status-select" data-id="'+esc(it.id)+'">'+statusOpts+'</select></td>'+
-        '<td><button type="button" class="icon-btn btn-delete" data-id="'+esc(it.id)+'" title="Supprimer cette proposition">'+ICONS.trash+'</button></td>'+
+        '<td><button type="button" class="icon-btn btn-delete'+(isDeleteArmed(it.id)?' confirm':'')+'" data-id="'+esc(it.id)+'" title="'+(isDeleteArmed(it.id)?'Cliquer à nouveau pour confirmer la suppression':'Supprimer cette proposition')+'">'+ICONS.trash+'</button></td>'+
       '</tr>';
     }).join("");
   }
@@ -876,25 +914,22 @@
     document.querySelectorAll(".btn-delete").forEach(function(btn){
       btn.addEventListener("click", function(){
         var id = btn.getAttribute("data-id");
-        if(btn.dataset.confirm !== "1"){
-          btn.dataset.confirm = "1";
+        if(!isDeleteArmed(id)){
+          // Armed state lives in `state`, not just on this DOM node: a re-render
+          // triggered between the two clicks (another edit, a background refresh)
+          // would otherwise silently disarm the button and strand the user on a
+          // third click. isDeleteArmed()/renderDashRows() keep it visually in sync.
+          state.confirmDeletes[id] = Date.now() + 4000;
           btn.classList.add("confirm");
           btn.title = "Cliquer à nouveau pour confirmer la suppression";
-          if(btn._revertTimer) clearTimeout(btn._revertTimer);
-          btn._revertTimer = setTimeout(function(){
-            btn.dataset.confirm = "0";
-            btn.classList.remove("confirm");
-            btn.title = "Supprimer cette proposition";
-          }, 4000);
           return;
         }
+        delete state.confirmDeletes[id];
         btn.disabled = true;
         deleteProposition(id, function(success, err){
           if(success){ toast("Proposition supprimée", ""); }
           else{
             btn.disabled = false;
-            btn.dataset.confirm = "0";
-            btn.classList.remove("confirm");
             toast("Suppression impossible", (err && err.message) || "Réessayez.", true);
           }
         });
@@ -928,12 +963,17 @@
   }
 
   function offerDownload(filename, blob){
-    if(!state.downloads){ toast("Export indisponible", "Le téléchargement n'est pas disponible dans cette vue.", true); return; }
-    state.downloads.save({filename: filename, data: blob}).then(function(){
+    try{
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = filename; a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 0);
       toast("Export prêt", filename);
-    }).catch(function(e){
-      if(e && e.code!=="declined"){ toast("Export impossible", (e && e.message) || "Réessayez.", true); }
-    });
+    }catch(e){
+      toast("Export impossible", e.message || "Réessayez.", true);
+    }
   }
 
   function exportCsv(){
