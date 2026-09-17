@@ -414,8 +414,21 @@
     sb.from("propositions").select("*").order("created_at", {ascending:false}).then(function(res){
       if(res.error){ console.warn("Supabase select error", res.error); return; }
       state.items = (res.data||[]).map(fromDbRow);
+      // Le rafraîchissement périodique (toutes les 15s) ne doit jamais effacer
+      // une saisie en cours : on n'exécute le re-rendu que si personne n'est
+      // en train de remplir le formulaire de proposition, ni de modifier un
+      // champ du Dashboard. Les données restent à jour en mémoire dans les
+      // deux cas ; l'affichage se met à jour dès la prochaine navigation.
+      if(currentRoute()==="proposer" || isEditingSomething()) return;
       render();
     });
+  }
+
+  function isEditingSomething(){
+    var el = document.activeElement;
+    if(!el) return false;
+    var tag = el.tagName;
+    return tag==="INPUT" || tag==="TEXTAREA" || tag==="SELECT";
   }
 
   function createProposition(data, cb){
