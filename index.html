@@ -413,6 +413,15 @@
     }catch(e){ return iso; }
   }
   function uid(){ return "p_" + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+  // Date du jour au format YYYY-MM-DD dans le fuseau LOCAL du visiteur.
+  // (new Date().toISOString() renvoie la date en UTC, ce qui peut décaler
+  // le "aujourd'hui" d'un jour près de minuit pour un visiteur hors UTC+0.)
+  function todayLocalDateStr(){
+    var d = new Date();
+    var m = String(d.getMonth()+1).padStart(2,"0");
+    var day = String(d.getDate()).padStart(2,"0");
+    return d.getFullYear()+"-"+m+"-"+day;
+  }
   function fmtSessionDateTime(iso){
     if(!iso) return "—";
     try{
@@ -470,6 +479,7 @@
     confirmDeleteSessions: {},
     confirmDeleteAffiches: {},
     roleAddOpen: null, /* id of the role currently showing its inline "add person" form, on the session detail page */
+    roleAddDraft: "", /* texte en cours de saisie dans ce formulaire : conservé dans `state` (et non dans le seul DOM) pour survivre à un re-rendu déclenché par un rafraîchissement en arrière-plan pendant que l'utilisateur tape */
     dashTab: "propositions" /* onglet actif dans le Dashboard : "propositions" ou "affiches" */
   };
 
@@ -559,8 +569,13 @@
   function afficheFileValid(file){
     if(!file) return false;
     var ext = (file.name.split(".").pop()||"").toLowerCase();
-    var typeOk = AFFICHE_ACCEPTED_TYPES.indexOf(file.type)>-1 || AFFICHE_ACCEPTED_EXT.indexOf(ext)>-1;
-    return typeOk && file.size <= AFFICHE_MAX_BYTES;
+    var extOk = AFFICHE_ACCEPTED_EXT.indexOf(ext) > -1;
+    // L'extension doit toujours correspondre ; le type MIME rapporté par le
+    // navigateur, s'il est renseigné, doit lui aussi être reconnu (avant,
+    // un simple "ou" laissait passer un type MIME incohérent dès que
+    // l'extension paraissait correcte).
+    var typeOk = !file.type || AFFICHE_ACCEPTED_TYPES.indexOf(file.type) > -1;
+    return extOk && typeOk && file.size <= AFFICHE_MAX_BYTES;
   }
   function afficheStoragePath(file){
     var ext = (file.name.split(".").pop()||"bin").toLowerCase();
@@ -621,9 +636,19 @@
 
   function isEditingSomething(){
     var el = document.activeElement;
-    if(!el) return false;
-    var tag = el.tagName;
-    return tag==="INPUT" || tag==="TEXTAREA" || tag==="SELECT";
+    if(el){
+      var tag = el.tagName;
+      if(tag==="INPUT" || tag==="TEXTAREA" || tag==="SELECT") return true;
+    }
+    // NB : la saisie du formulaire "ajouter une personne à un rôle" n'a pas
+    // besoin d'être détectée ici — elle est recopiée en direct dans
+    // `state.roleAddDraft` (voir bindSessionDetailEvents) et donc restituée
+    // correctement même si un rafraîchissement régénère la page pendant que
+    // le focus n'est plus sur le champ.
+    // Le code d'accès administrateur est en cours de saisie (avant validation).
+    var gate = document.getElementById("gateCode");
+    if(gate && gate.value) return true;
+    return false;
   }
 
   function createProposition(data, cb){
@@ -1278,7 +1303,7 @@
 
     var themeOptions = THEMES.map(function(t){ return '<option value="'+t.id+'">'+esc(t.label)+'</option>'; }).join("");
     var durationOptions = DURATIONS.map(function(d){ return '<option value="'+esc(d)+'">'+esc(d)+'</option>'; }).join("");
-    var today = new Date().toISOString().slice(0,10);
+    var today = todayLocalDateStr();
 
     return '<section class="wrap"><div class="form-shell">'+
       '<div class="section-head" style="margin-bottom:26px">'+
@@ -1392,7 +1417,7 @@
         var isRequired = required.indexOf(name) !== -1;
         var valid = !isRequired || val.length>0;
         if(name==="presenterEmail" && val){ valid = valid && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val); }
-        if(name==="desiredDate" && val){ valid = valid && (val >= new Date().toISOString().slice(0,10)); }
+        if(name==="desiredDate" && val){ valid = valid && (val >= todayLocalDateStr()); }
         fieldWrap.classList.toggle("invalid", !valid);
         if(!valid) ok = false;
       });
@@ -1591,12 +1616,12 @@
     return '<div class="role-row" data-role="'+r.id+'">'+
       '<span class="role-label">'+esc(r.label)+'</span>'+
       '<div class="role-people">'+
-        (people.length ? people.map(function(name, idx){
-          return '<span class="role-chip">'+esc(name)+'<button type="button" class="role-chip-remove" data-remove-role="'+r.id+'" data-remove-idx="'+idx+'" title="Retirer '+esc(name)+'">'+ICONS.close+'</button></span>';
+        (people.length ? people.map(function(name){
+          return '<span class="role-chip">'+esc(name)+'<button type="button" class="role-chip-remove" data-remove-role="'+r.id+'" data-remove-name="'+esc(name)+'" title="Retirer '+esc(name)+'">'+ICONS.close+'</button></span>';
         }).join("") : '<span class="role-empty">Non assigné</span>')+
         (addOpen ?
             '<form class="role-add-form" data-role-add="'+r.id+'">'+
-              '<input type="text" placeholder="Nom et prénom" required>'+
+              '<input type="text" placeholder="Nom et prénom" required value="'+esc(state.roleAddDraft||"")+'">'+
               '<button type="submit" class="btn btn-primary btn-sm">Ajouter</button>'+
               '<button type="button" class="btn btn-ghost btn-sm" data-role-add-cancel="'+r.id+'">Annuler</button>'+
             '</form>'
@@ -1624,7 +1649,7 @@
             editField("sfNumber","Numéro de la session",s?s.sessionNumber:"")+
             editField("sfDatetime","Date et heure",s?toLocalDatetimeInputValue(s.sessionDatetime):"","datetime-local")+
             editField("sfLocation","Lieu",s?s.location:"","text","full")+
-            editField("sfTeamsLink","Lien Microsoft Teams",s?s.teamsLink:"","url","full")+
+            editField("sfTeamsLink","Lien Microsoft Teams (optionnel)",s?s.teamsLink:"","url","full")+
             editTextarea("sfDescription","Description (optionnelle)",s?s.description:"","full")+
           '</div>'+
           '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px">'+
@@ -1662,10 +1687,14 @@
           teamsLink: document.getElementById("sfTeamsLink").value.trim(),
           description: document.getElementById("sfDescription").value.trim()
         };
-        var required = ["name","sessionNumber","sessionDatetime","location","teamsLink"];
+        // Le lien Microsoft Teams n'est volontairement pas obligatoire : une
+        // session peut être 100% en présentiel. Le reste de l'application
+        // (détail de session, bannière d'accueil) affiche déjà correctement
+        // son absence ("—" / lieu seul).
+        var required = ["name","sessionNumber","sessionDatetime","location"];
         var missing = required.some(function(k){ return !data[k]; });
         if(missing){
-          toast("Champs incomplets", "Merci de remplir tous les champs (seule la description est optionnelle).", true);
+          toast("Champs incomplets", "Merci de remplir tous les champs (le lien Teams et la description sont optionnels).", true);
           return;
         }
         var btn = document.getElementById("btnSaveSession");
@@ -1709,9 +1738,20 @@
       btn.addEventListener("click", function(){
         var sid = btn.getAttribute("data-id");
         if(!isSessionDeleteArmed(sid)){
-          state.confirmDeleteSessions[sid] = Date.now() + 4000;
+          var armedAt = Date.now() + 4000;
+          state.confirmDeleteSessions[sid] = armedAt;
           btn.classList.add("confirm");
           btn.title = "Cliquer à nouveau pour confirmer la suppression";
+          // Si aucun re-rendu ne survient avant l'expiration (pas d'autre
+          // action entre-temps), on désarme visuellement ce bouton précis
+          // pour ne pas laisser croire qu'un simple clic suffirait encore.
+          setTimeout(function(){
+            if(state.confirmDeleteSessions[sid]===armedAt){
+              delete state.confirmDeleteSessions[sid];
+              btn.classList.remove("confirm");
+              btn.title = "Supprimer cette session";
+            }
+          }, 4000);
           return;
         }
         delete state.confirmDeleteSessions[sid];
@@ -1726,13 +1766,20 @@
     document.querySelectorAll("[data-role-add-open]").forEach(function(btn){
       btn.addEventListener("click", function(){
         state.roleAddOpen = id+"::"+btn.getAttribute("data-role-add-open");
+        state.roleAddDraft = "";
         render();
       });
     });
     document.querySelectorAll("[data-role-add-cancel]").forEach(function(btn){
-      btn.addEventListener("click", function(){ state.roleAddOpen = null; render(); });
+      btn.addEventListener("click", function(){ state.roleAddOpen = null; state.roleAddDraft = ""; render(); });
     });
     document.querySelectorAll("[data-role-add]").forEach(function(form){
+      // La saisie est recopiée dans `state.roleAddDraft` à chaque frappe :
+      // si un rafraîchissement en arrière-plan régénère toute la page pendant
+      // que l'utilisateur tape (avant validation), le formulaire rouvre avec
+      // le texte déjà saisi au lieu de le perdre.
+      var draftInput = form.querySelector("input");
+      if(draftInput) draftInput.addEventListener("input", function(){ state.roleAddDraft = draftInput.value; });
       form.addEventListener("submit", function(e){
         e.preventDefault();
         var roleId = form.getAttribute("data-role-add");
@@ -1744,10 +1791,21 @@
         var roles = s.roles || emptySessionRoles();
         var roleCfg = SESSION_ROLES.find(function(r){ return r.id===roleId; });
         var current = roles[roleId] || [];
+        // Pas deux fois la même personne sur un même rôle (comparaison
+        // insensible à la casse/aux espaces superflus).
+        var alreadyThere = current.some(function(n){ return n.trim().toLowerCase()===name.toLowerCase(); });
+        if(alreadyThere){
+          state.roleAddOpen = null;
+          state.roleAddDraft = "";
+          toast(roleCfg ? roleCfg.label : "Rôle", name+" est déjà assigné(e) à ce rôle.", true);
+          render();
+          return;
+        }
         var updated = (roleCfg && roleCfg.multiple) ? current.concat([name]) : [name];
         var newRoles = Object.assign({}, roles);
         newRoles[roleId] = updated;
         state.roleAddOpen = null;
+        state.roleAddDraft = "";
         updateSession(id, {roles:newRoles}, function(success){
           if(success && roleCfg) toast("Rôle mis à jour", roleCfg.label+" : "+name);
         });
@@ -1756,11 +1814,18 @@
     document.querySelectorAll("[data-remove-role]").forEach(function(btn){
       btn.addEventListener("click", function(){
         var roleId = btn.getAttribute("data-remove-role");
-        var idx = parseInt(btn.getAttribute("data-remove-idx"),10);
+        var targetName = btn.getAttribute("data-remove-name");
+        // On relit `state.sessions` (susceptible d'avoir été rafraîchi par un
+        // sondage en arrière-plan depuis le dernier rendu) et on retire par
+        // NOM plutôt que par position dans le tableau : un simple index
+        // capturé au rendu peut ne plus correspondre à la bonne personne si
+        // la liste a changé entre-temps.
         var s = state.sessions.find(function(x){ return String(x.id)===String(id); });
         if(!s) return;
         var roles = s.roles || emptySessionRoles();
         var current = (roles[roleId]||[]).slice();
+        var idx = current.findIndex(function(n){ return n===targetName; });
+        if(idx===-1) return; // déjà retiré entre-temps
         current.splice(idx,1);
         var newRoles = Object.assign({}, roles);
         newRoles[roleId] = current;
@@ -2022,9 +2087,17 @@
       btn.addEventListener("click", function(){
         var id = btn.getAttribute("data-id");
         if(!isAfficheDeleteArmed(id)){
-          state.confirmDeleteAffiches[id] = Date.now() + 4000;
+          var armedAt = Date.now() + 4000;
+          state.confirmDeleteAffiches[id] = armedAt;
           btn.classList.add("confirm");
           btn.title = "Cliquer à nouveau pour confirmer la suppression";
+          setTimeout(function(){
+            if(state.confirmDeleteAffiches[id]===armedAt){
+              delete state.confirmDeleteAffiches[id];
+              btn.classList.remove("confirm");
+              btn.title = "Supprimer cette affiche";
+            }
+          }, 4000);
           return;
         }
         delete state.confirmDeleteAffiches[id];
@@ -2061,9 +2134,21 @@
           // triggered between the two clicks (another edit, a background refresh)
           // would otherwise silently disarm the button and strand the user on a
           // third click. isDeleteArmed()/renderDashRows() keep it visually in sync.
-          state.confirmDeletes[id] = Date.now() + 4000;
+          var armedAt = Date.now() + 4000;
+          state.confirmDeletes[id] = armedAt;
           btn.classList.add("confirm");
           btn.title = "Cliquer à nouveau pour confirmer la suppression";
+          // Et si RIEN ne déclenche de re-rendu avant l'expiration, on
+          // désarme ce bouton directement plutôt que de le laisser paraître
+          // "armé" indéfiniment alors que le prochain clic serait en fait
+          // traité comme un premier clic.
+          setTimeout(function(){
+            if(state.confirmDeletes[id]===armedAt){
+              delete state.confirmDeletes[id];
+              btn.classList.remove("confirm");
+              btn.title = "Supprimer cette proposition";
+            }
+          }, 4000);
           return;
         }
         delete state.confirmDeletes[id];
