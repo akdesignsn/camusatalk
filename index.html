@@ -127,14 +127,13 @@
   .hero-stat span{font-size:12.5px;color:#aab6d6;letter-spacing:.02em}
   .hero-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);border-radius:20px;padding:26px;backdrop-filter:blur(6px)}
   .hero-card .mini-card{background:var(--surface);border-radius:var(--radius-sm);padding:16px;color:var(--text);box-shadow:var(--shadow-lg);margin-bottom:12px}
-  .hero-card .mini-card:last-child{margin-bottom:0;transform:translateX(14px);opacity:.9}
+  .hero-card .mini-card:last-child{margin-bottom:0}
   .mini-card .mc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
   .mini-card h4{font-size:14px;margin:0;font-weight:700}
   .mini-card p{font-size:12.5px;margin:2px 0 0;color:var(--text-soft)}
   .mini-card[data-detail]{cursor:pointer;transition:box-shadow .15s,transform .15s}
   .mini-card[data-detail]:hover{box-shadow:0 24px 40px -14px rgba(0,0,0,.35)}
-  .mini-card[data-detail]:hover:not(:last-child){transform:translateY(-2px)}
-  .mini-card[data-detail]:last-child:hover{transform:translateX(14px) translateY(-2px)}
+  .mini-card[data-detail]:hover{transform:translateY(-2px)}
   .mini-card[data-detail]:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 
   /* ---------- Sections ---------- */
