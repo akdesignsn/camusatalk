@@ -1127,6 +1127,14 @@
   });
 
   /* ============================= RENDER: ROOT ============================= */
+  // Mémorise la "page" (route + éventuel identifiant de session) affichée au
+  // dernier rendu, pour ne remonter en haut de l'écran que lors d'une VRAIE
+  // navigation. Sans cela, tout rafraîchissement en arrière-plan (sondage
+  // Supabase toutes les 15s) ou toute interaction sur la page courante
+  // (ouvrir un formulaire de rôle, créer une session...) rappelle render()
+  // et faisait remonter la page en haut alors même que l'utilisateur est en
+  // train de la consulter ou de la faire défiler.
+  var lastRenderedRouteKey = null;
   function render(){
     updateActiveNav();
     var route = currentRoute();
@@ -1137,7 +1145,11 @@
     else if(route==="sessions") view.innerHTML = renderSessions();
     else if(route==="affiches") view.innerHTML = renderAffichesGallery();
     else if(route==="dashboard") view.innerHTML = renderDashboard();
-    window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
+    var routeKey = route + (route==="sessions" ? ":"+(sessionIdFromHash()||"") : "");
+    if(routeKey !== lastRenderedRouteKey){
+      window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
+    }
+    lastRenderedRouteKey = routeKey;
     bindRouteEvents(route);
   }
 
