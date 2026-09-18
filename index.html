@@ -639,7 +639,7 @@
             '<div class="field full"><label for="editTheme">Thématique</label><select id="editTheme">'+themeOptions+'</select></div>'+
             editField("editMentorName","Mentor accompagnateur",it.mentorName)+
             editField("editMentorDept","Département du mentor",it.mentorDept)+
-            editTextarea("editObjective","Objectif de la présentation",it.objective,"full")+
+            editTextarea("editObjective","Objectif de la présentation (optionnel)",it.objective,"full")+
             '<div class="field"><label for="editDuration">Durée estimée</label><select id="editDuration">'+durationOptions+'</select></div>'+
             '<div class="field"><label for="editDesiredDate">Date souhaitée</label><input type="date" id="editDesiredDate" value="'+esc(it.desiredDate||"")+'"></div>'+
             '<div class="field full"><label for="editStatus">Statut</label><select id="editStatus">'+statusOptions+'</select></div>'+
@@ -670,7 +670,7 @@
         desiredDate: document.getElementById("editDesiredDate").value,
         status: document.getElementById("editStatus").value
       };
-      var required = ["presenterName","presenterRole","presenterEmail","title","description","objective","duration","desiredDate"];
+      var required = ["presenterName","presenterRole","presenterEmail","title","description","duration","desiredDate"];
       var missing = required.some(function(k){ return !patch[k]; });
       if(missing){
         toast("Champs incomplets", "Merci de remplir tous les champs avant d'enregistrer.", true);
@@ -834,9 +834,8 @@
             field("mentorName","Nom du mentor accompagnateur (optionnel)","text",false)+
             field("mentorDept","Département du mentor (optionnel)","text",false)+
             '<div class="field full">'+
-              '<label for="objective">Objectif de la présentation <span class="req">*</span></label>'+
+              '<label for="objective">Objectif de la présentation (optionnel)</label>'+
               '<textarea id="objective" name="objective" placeholder="Que doivent retenir ou savoir faire les participants à la fin ?"></textarea>'+
-              '<div class="err">Merci de préciser l\'objectif.</div>'+
             '</div>'+
           '</div>'+
         '</div>'+
@@ -873,6 +872,12 @@
   }
 
   function bindProposerForm(){
+    // Le bouton "Proposer un autre sujet" n'existe que sur l'écran de
+    // confirmation (donc sans #talkForm à ce moment-là) : on le lie avant le
+    // "return" ci-dessous, sinon ce clic ne fait jamais rien.
+    var another = document.getElementById("btnAnotherProposal");
+    if(another){ another.addEventListener("click", function(){ state.lastSubmitted = null; render(); }); }
+
     var form = document.getElementById("talkForm");
     if(!form) return;
 
@@ -886,7 +891,7 @@
       // mentor identifié peut soumettre son sujet, l'équipe RH lui en assignera
       // un depuis le Dashboard (champ "Mentor" déjà modifiable en ligne).
       var allFields = ["presenterName","presenterRole","presenterEmail","title","description","theme","mentorName","mentorDept","objective","duration","desiredDate"];
-      var required = ["presenterName","presenterRole","presenterEmail","title","description","theme","objective","duration","desiredDate"];
+      var required = ["presenterName","presenterRole","presenterEmail","title","description","theme","duration","desiredDate"];
       var ok = true;
       var values = {};
       allFields.forEach(function(name){
@@ -920,9 +925,6 @@
         }
       });
     });
-
-    var another = document.getElementById("btnAnotherProposal");
-    if(another){ another.addEventListener("click", function(){ state.lastSubmitted = null; render(); }); }
   }
 
   /* ============================= PRÉSENTATEURS ============================= */
