@@ -1147,6 +1147,7 @@
     var themesUsed = new Set(state.items.map(function(i){return i.theme})).size;
     var mentors = new Set(state.items.map(function(i){return i.mentorName}).filter(Boolean)).size;
     var top3 = itemsSorted().slice(0,3);
+    var sessionBannerHtml = renderNextSessionBanner();
 
     return ''+
     '<div class="hero">'+
@@ -1176,6 +1177,14 @@
       '</div>'+
     '</div>'+
 
+    sessionBannerHtml+
+    '<section class="wrap"'+(sessionBannerHtml?' style="padding-top:0"':'')+'>'+
+      '<div class="poster-home-card" data-nav="#/affiches" role="button" tabindex="0" aria-label="Voir les affiches CAMUSAT TALK">'+
+        '<div class="poster-home-icon">'+ICONS.image+'</div>'+
+        '<div><h3>Nos affiches</h3><p>Retrouvez les affiches des sessions CAMUSAT TALK, en un coup d\'œil.</p></div>'+
+        '<span class="arrow" aria-hidden="true" style="font-size:20px;font-weight:700">→</span>'+
+      '</div>'+
+    '</section>'+
     '<section class="wrap">'+
       '<div class="section-head">'+
         '<span class="kicker">Comment ça marche</span>'+
@@ -1189,26 +1198,18 @@
       '</div>'+
     '</section>'+
     '<section class="wrap" style="padding-top:0">'+
-      '<div class="poster-home-card" data-nav="#/affiches" role="button" tabindex="0" aria-label="Voir les affiches CAMUSAT TALK">'+
-        '<div class="poster-home-icon">'+ICONS.image+'</div>'+
-        '<div><h3>Nos affiches</h3><p>Retrouvez les affiches des sessions CAMUSAT TALK, en un coup d\'œil.</p></div>'+
-        '<span class="arrow" aria-hidden="true" style="font-size:20px;font-weight:700">→</span>'+
-      '</div>'+
-    '</section>'+
-    '<section class="wrap" style="padding-top:0">'+
       '<div style="background:var(--navy-tint);border-radius:20px;padding:36px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">'+
         '<div><h3 style="margin:0 0 6px;font-size:19px">Une idée à partager ?</h3><p style="margin:0">Rejoignez les collaborateurs qui font déjà vivre CAMUSAT TALK.</p></div>'+
         '<button class="btn btn-outline-navy" style="border-color:var(--navy)" data-nav="#/proposer">Proposer un sujet</button>'+
       '</div>'+
-    '</section>'+
-    renderNextSessionBanner();
+    '</section>';
   }
 
   function renderNextSessionBanner(){
     var s = nextUpcomingSession();
     if(!s) return "";
     var line2 = [s.location, s.teamsLink ? "Microsoft Teams" : ""].filter(Boolean).join(" | ");
-    return '<section class="wrap" style="padding-top:0">'+
+    return '<section class="wrap">'+
       '<div class="session-banner" data-nav="#/sessions/'+esc(s.id)+'" role="button" tabindex="0" aria-label="Voir les détails de la session '+esc(s.name||"")+'">'+
         '<div class="session-banner-label">'+ICONS.calendar+' Prochaine session CAMUSAT TALK</div>'+
         '<h3>Session #'+esc(s.sessionNumber||"—")+' – '+esc(s.name||"Sans titre")+'</h3>'+
@@ -1626,33 +1627,53 @@
     if(first) first.focus();
 
     document.getElementById("btnSaveSession").addEventListener("click", function(){
-      var dtVal = document.getElementById("sfDatetime").value;
-      var data = {
-        name: document.getElementById("sfName").value.trim(),
-        sessionNumber: document.getElementById("sfNumber").value.trim(),
-        sessionDatetime: dtVal ? new Date(dtVal).toISOString() : "",
-        location: document.getElementById("sfLocation").value.trim(),
-        teamsLink: document.getElementById("sfTeamsLink").value.trim(),
-        description: document.getElementById("sfDescription").value.trim()
-      };
-      var required = ["name","sessionNumber","sessionDatetime","location","teamsLink"];
-      var missing = required.some(function(k){ return !data[k]; });
-      if(missing){
-        toast("Champs incomplets", "Merci de remplir tous les champs (seule la description est optionnelle).", true);
-        return;
-      }
-      var btn = document.getElementById("btnSaveSession");
-      btn.disabled = true; btn.textContent = "Enregistrement…";
-      if(s){
-        updateSession(s.id, data, function(success, err){
-          if(success){ toast("Session modifiée", data.name); closeDetailModal(); }
-          else{ btn.disabled=false; btn.textContent="Enregistrer les modifications"; toast("Modification impossible", (err&&err.message)||"Réessayez.", true); }
-        });
-      } else {
-        createSession(data, function(success, err){
-          if(success){ toast("Session créée", data.name); closeDetailModal(); render(); }
-          else{ btn.disabled=false; btn.textContent="Créer la session"; toast("Création impossible", (err&&err.message)||"Réessayez.", true); }
-        });
+      // Toute la logique est protégée par un try/catch : une exception
+      // imprévue (ex. date invalide) ne doit jamais laisser le formulaire
+      // dans un état bloqué ou donner l'impression qu'il "se ferme tout
+      // seul" — l'utilisateur doit toujours voir un message clair.
+      try{
+        var dtVal = document.getElementById("sfDatetime").value;
+        var dtIso = "";
+        if(dtVal){
+          var dtParsed = new Date(dtVal);
+          if(isNaN(dtParsed.getTime())){
+            toast("Date invalide", "Vérifiez la date et l'heure de la session.", true);
+            return;
+          }
+          dtIso = dtParsed.toISOString();
+        }
+        var data = {
+          name: document.getElementById("sfName").value.trim(),
+          sessionNumber: document.getElementById("sfNumber").value.trim(),
+          sessionDatetime: dtIso,
+          location: document.getElementById("sfLocation").value.trim(),
+          teamsLink: document.getElementById("sfTeamsLink").value.trim(),
+          description: document.getElementById("sfDescription").value.trim()
+        };
+        var required = ["name","sessionNumber","sessionDatetime","location","teamsLink"];
+        var missing = required.some(function(k){ return !data[k]; });
+        if(missing){
+          toast("Champs incomplets", "Merci de remplir tous les champs (seule la description est optionnelle).", true);
+          return;
+        }
+        var btn = document.getElementById("btnSaveSession");
+        btn.disabled = true; btn.textContent = "Enregistrement…";
+        if(s){
+          updateSession(s.id, data, function(success, err){
+            if(success){ toast("Session modifiée", data.name); closeDetailModal(); }
+            else{ btn.disabled=false; btn.textContent="Enregistrer les modifications"; toast("Modification impossible", (err&&err.message)||"Réessayez.", true); }
+          });
+        } else {
+          createSession(data, function(success, err){
+            if(success){ toast("Session créée", data.name); closeDetailModal(); render(); }
+            else{ btn.disabled=false; btn.textContent="Créer la session"; toast("Création impossible", (err&&err.message)||"Réessayez.", true); }
+          });
+        }
+      }catch(ex){
+        console.error("Erreur lors de l'enregistrement de la session", ex);
+        toast("Erreur inattendue", "L'enregistrement a échoué. Le formulaire reste ouvert : réessayez.", true);
+        var btn2 = document.getElementById("btnSaveSession");
+        if(btn2){ btn2.disabled = false; btn2.textContent = s ? "Enregistrer les modifications" : "Créer la session"; }
       }
     });
   }
