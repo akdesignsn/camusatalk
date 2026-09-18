@@ -131,6 +131,11 @@
   .mini-card .mc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
   .mini-card h4{font-size:14px;margin:0;font-weight:700}
   .mini-card p{font-size:12.5px;margin:2px 0 0;color:var(--text-soft)}
+  .mini-card[data-detail]{cursor:pointer;transition:box-shadow .15s,transform .15s}
+  .mini-card[data-detail]:hover{box-shadow:0 24px 40px -14px rgba(0,0,0,.35)}
+  .mini-card[data-detail]:hover:not(:last-child){transform:translateY(-2px)}
+  .mini-card[data-detail]:last-child:hover{transform:translateX(14px) translateY(-2px)}
+  .mini-card[data-detail]:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 
   /* ---------- Sections ---------- */
   section{padding-block:64px}
@@ -609,7 +614,7 @@
     var total = state.items.length;
     var themesUsed = new Set(state.items.map(function(i){return i.theme})).size;
     var mentors = new Set(state.items.map(function(i){return i.mentorName}).filter(Boolean)).size;
-    var top3 = itemsSorted().slice(0,2);
+    var top3 = itemsSorted().slice(0,3);
 
     return ''+
     '<div class="hero">'+
@@ -632,7 +637,7 @@
         '<div class="hero-card">'+
           top3.map(function(it){
             var th = themeById(it.theme);
-            return '<div class="mini-card"><div class="mc-top"><span class="theme-tag"><span class="dot" style="background:'+th.color+'"></span>'+esc(th.label)+'</span>'+statusPill(it.status)+'</div><h4>'+esc(it.title)+'</h4><p>'+esc(it.presenterName)+' · mentor '+esc(it.mentorName||'—')+'</p></div>';
+            return '<div class="mini-card" data-detail="'+esc(it.id)+'" role="button" tabindex="0" aria-label="Voir le détail de '+esc(it.title)+'"><div class="mc-top"><span class="theme-tag"><span class="dot" style="background:'+th.color+'"></span>'+esc(th.label)+'</span>'+statusPill(it.status)+'</div><h4>'+esc(it.title)+'</h4><p>'+esc(it.presenterName)+' · mentor '+esc(it.mentorName||'—')+'</p></div>';
           }).join("") +
           (top3.length===0 ? '<div class="mini-card"><h4>Votre sujet apparaîtra ici</h4><p>Soyez le premier à proposer un TALK</p></div>' : '') +
         '</div>'+
