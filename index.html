@@ -169,6 +169,27 @@
   .pill-realisee{background:var(--st-real-bg);color:var(--st-real-fg);border-color:var(--st-real-bd)}
   .empty-state{text-align:center;padding:60px 20px;color:var(--text-soft)}
   .empty-state svg{margin-bottom:14px;opacity:.5}
+  .talk-card{cursor:pointer}
+  .talk-card:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+
+  /* ---------- Detail modal ---------- */
+  body.modal-open{overflow:hidden}
+  .modal-overlay{position:fixed;inset:0;z-index:150;background:rgba(15,21,36,.55);display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;animation:modal-fade .15s ease}
+  .modal-card{background:var(--surface);border-radius:20px;box-shadow:var(--shadow-lg);max-width:640px;width:100%;margin:auto;position:relative}
+  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:26px 26px 0}
+  .modal-close{background:var(--navy-tint);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--navy);flex-shrink:0;transition:background .15s}
+  .modal-close:hover{background:var(--border)}
+  .modal-body{padding:16px 26px 28px}
+  .modal-title{font-size:20px;margin:6px 0 0}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;margin-top:20px}
+  @media (max-width:560px){.detail-grid{grid-template-columns:1fr}}
+  .detail-item{display:flex;flex-direction:column;gap:3px}
+  .detail-item .dt-label{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-soft)}
+  .detail-item .dt-value{font-size:14px;color:var(--text)}
+  .detail-block{font-size:14px;color:var(--text-muted);line-height:1.6;white-space:pre-wrap;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+  .detail-block h4{font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--navy);margin:0 0 8px}
+  .detail-block p{margin:0;color:var(--text-muted)}
+  @keyframes modal-fade{from{opacity:0}to{opacity:1}}
 
   /* ---------- Form ---------- */
   .form-shell{max-width:840px;margin-inline:auto}
@@ -245,6 +266,7 @@
 </style>
 
 <div id="toast-root" aria-live="polite"></div>
+<div id="detailModal" class="modal-overlay" hidden></div>
 
 <nav class="navbar">
   <div class="nav-inner">
@@ -330,7 +352,9 @@
     users:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M2 20c1-3.5 3.5-5.5 7-5.5S15 16.5 16 20"/><circle cx="17.5" cy="9" r="2.3"/><path d="M17 13.2c2.2.3 3.7 1.8 4.3 4"/></svg>',
     layers:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     target:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg>',
-    trash:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    trash:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    close:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>',
+    mail:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
   /* ============================= STATE ============================= */
@@ -501,7 +525,68 @@
   document.addEventListener("click", function(e){
     var t = e.target.closest("[data-nav]");
     if(t){ navTo(t.getAttribute("data-nav")); }
+    var d = e.target.closest("[data-detail]");
+    if(d){ openDetailModal(d.getAttribute("data-detail")); }
+    // Ferme la fenêtre de détail si on clique sur le fond sombre ou sur le
+    // bouton de fermeture (mais pas sur son contenu, qui n'a pas cet attribut).
+    if(e.target.id==="detailModal" || e.target.closest("[data-modal-close]")){ closeDetailModal(); }
   });
+  document.addEventListener("keydown", function(e){
+    if(e.key==="Escape"){
+      var modal = document.getElementById("detailModal");
+      if(modal && !modal.hidden) closeDetailModal();
+      return;
+    }
+    if(e.key==="Enter" || e.key===" "){
+      var card = e.target.closest && e.target.closest("[data-detail]");
+      if(card){ e.preventDefault(); openDetailModal(card.getAttribute("data-detail")); }
+    }
+  });
+
+  /* ============================= DÉTAIL D'UNE PROPOSITION (modale) ============================= */
+  function openDetailModal(id){
+    var it = state.items.find(function(x){ return String(x.id)===String(id); });
+    if(!it) return;
+    var th = themeById(it.theme);
+    var modal = document.getElementById("detailModal");
+    modal.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true" aria-label="Détail de la proposition">'+
+        '<div class="modal-head">'+
+          '<div>'+
+            '<span class="theme-tag"><span class="dot" style="background:'+th.color+'"></span>'+esc(th.label)+'</span>'+
+            '<h3 class="modal-title">'+esc(it.title)+'</h3>'+
+          '</div>'+
+          '<button type="button" class="modal-close" data-modal-close aria-label="Fermer">'+ICONS.close+'</button>'+
+        '</div>'+
+        '<div class="modal-body">'+
+          '<div class="card-foot" style="border-top:none;padding-top:0;margin-top:14px">'+
+            '<span style="font-size:13px;font-weight:600">'+esc(it.presenterName)+'</span>'+statusPill(it.status)+
+          '</div>'+
+          '<div class="detail-grid">'+
+            '<div class="detail-item"><span class="dt-label">Poste / département</span><span class="dt-value">'+esc(it.presenterRole||"—")+'</span></div>'+
+            '<div class="detail-item"><span class="dt-label">E-mail</span><span class="dt-value">'+esc(it.presenterEmail||"—")+'</span></div>'+
+            '<div class="detail-item"><span class="dt-label">Mentor accompagnateur</span><span class="dt-value">'+esc(it.mentorName||"—")+'</span></div>'+
+            '<div class="detail-item"><span class="dt-label">Département du mentor</span><span class="dt-value">'+esc(it.mentorDept||"—")+'</span></div>'+
+            '<div class="detail-item"><span class="dt-label">Durée estimée</span><span class="dt-value">'+esc(it.duration||"—")+'</span></div>'+
+            '<div class="detail-item"><span class="dt-label">Date souhaitée</span><span class="dt-value">'+fmtDate(it.desiredDate)+'</span></div>'+
+          '</div>'+
+          '<div class="detail-block"><h4>Description du sujet</h4><p>'+esc(it.description||"—")+'</p></div>'+
+          '<div class="detail-block"><h4>Objectif de la présentation</h4><p>'+esc(it.objective||"—")+'</p></div>'+
+        '</div>'+
+      '</div>';
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+    var closeBtn = modal.querySelector(".modal-close");
+    if(closeBtn) closeBtn.focus();
+  }
+
+  function closeDetailModal(){
+    var modal = document.getElementById("detailModal");
+    if(!modal || modal.hidden) return;
+    modal.hidden = true;
+    modal.innerHTML = "";
+    document.body.classList.remove("modal-open");
+  }
   document.getElementById("navToggle").addEventListener("click", function(){
     document.getElementById("navLinks").classList.toggle("open");
   });
@@ -770,7 +855,7 @@
   function renderCardsGrid(list){
     return '<div class="grid-cards">' + list.map(function(it){
       var th = themeById(it.theme);
-      return '<div class="talk-card">'+
+      return '<div class="talk-card" data-detail="'+esc(it.id)+'" role="button" tabindex="0" aria-label="Voir le détail de '+esc(it.title)+'">'+
         (it.demo ? '<span class="demo-badge">Exemple</span>' : '')+
         '<span class="theme-tag"><span class="dot" style="background:'+th.color+'"></span>'+esc(th.label)+'</span>'+
         '<h3>'+esc(it.title)+'</h3>'+
