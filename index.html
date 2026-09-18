@@ -251,6 +251,62 @@
   .icon-btn:disabled{opacity:.5;cursor:not-allowed}
   .icon-btn.confirm{background:var(--red-tint);border-color:var(--red);color:var(--red)}
 
+  /* ---------- Sessions ---------- */
+  .detail-item.full{grid-column:1/-1}
+  .roles-list{display:flex;flex-direction:column;gap:10px;max-width:840px}
+  .role-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .role-label{font-size:13.5px;font-weight:700;min-width:230px;flex-shrink:0}
+  .role-people{display:flex;gap:8px;flex-wrap:wrap;flex:1;align-items:center}
+  .role-chip{display:inline-flex;align-items:center;gap:6px;background:var(--navy-tint);color:var(--navy);font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:999px}
+  .role-chip-remove{background:none;border:none;padding:0;display:flex;cursor:pointer;color:var(--navy);opacity:.65}
+  .role-chip-remove:hover{opacity:1}
+  .role-empty{font-size:12.5px;color:var(--text-soft);font-style:italic}
+  .role-add-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .role-add-form input{padding:6px 10px;font-size:12.5px;width:170px}
+  @media (max-width:640px){.role-row{flex-direction:column;align-items:stretch}.role-label{min-width:0}}
+
+  /* ---------- Bannière prochaine session ---------- */
+  .session-banner{background:var(--red);color:#fff;border-radius:20px;padding:28px 32px;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 14px 32px -12px rgba(200,16,46,.45);display:block}
+  .session-banner:hover{transform:translateY(-2px);box-shadow:0 20px 40px -12px rgba(200,16,46,.55)}
+  .session-banner:focus-visible{outline:2px solid #fff;outline-offset:3px}
+  .session-banner-label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#ffd8de;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .session-banner h3{color:#fff;margin:0 0 8px;font-size:clamp(18px,2.4vw,22px)}
+  .session-banner p{color:#ffe1e5;margin:0 0 4px;font-size:14px}
+  .session-banner-cta{display:inline-block;margin-top:14px;font-weight:700;font-size:13.5px;color:#fff}
+
+  /* ---------- Affiches ---------- */
+  .poster-home-card{display:flex;align-items:center;gap:18px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 30px;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s,transform .15s}
+  .poster-home-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+  .poster-home-card:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+  .poster-home-icon{width:52px;height:52px;border-radius:14px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .poster-home-card h3{margin:0 0 4px;font-size:17px}
+  .poster-home-card p{margin:0;font-size:13.5px;color:var(--text-soft)}
+  .poster-home-card .arrow{margin-left:auto;color:var(--navy);flex-shrink:0}
+
+  .poster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:20px}
+  .poster-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s,transform .15s;display:flex;flex-direction:column}
+  .poster-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+  .poster-card:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+  .poster-thumb{aspect-ratio:3/4;background:var(--navy-tint);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .poster-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .poster-thumb .pdf-badge{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--navy)}
+  .poster-title{padding:12px 14px 2px;font-size:13.5px;font-weight:700}
+  .poster-session{padding:0 14px 14px;font-size:12px;color:var(--text-soft)}
+  .poster-row-thumb{width:40px;height:52px;border-radius:6px;overflow:hidden;background:var(--navy-tint);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--navy)}
+  .poster-row-thumb img{width:100%;height:100%;object-fit:cover}
+
+  .lightbox-overlay{position:fixed;inset:0;z-index:200;background:rgba(10,14,24,.92);display:flex;align-items:center;justify-content:center;padding:24px;animation:modal-fade .15s ease}
+  .lightbox-card{max-width:min(880px,92vw);max-height:90vh;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .lightbox-card img{max-width:100%;max-height:74vh;border-radius:12px;box-shadow:var(--shadow-lg);object-fit:contain;background:#fff}
+  .lightbox-title{color:#fff;font-size:15px;font-weight:700;text-align:center}
+  .lightbox-close{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:999px;padding:10px;cursor:pointer;display:flex}
+  .lightbox-close:hover{background:rgba(255,255,255,.24)}
+  @media (max-width:640px){.poster-home-card{padding:20px}}
+
+  .dash-tabs{display:flex;gap:8px;margin-bottom:22px}
+  .dash-tab{font-size:13.5px;font-weight:700;padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text-muted)}
+  .dash-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
   /* ---------- Gate (admin passcode) ---------- */
   .gate-wrap{max-width:420px;margin:60px auto;background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-md);padding:36px;text-align:center}
   .gate-wrap .gicon{width:52px;height:52px;border-radius:14px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
@@ -271,6 +327,7 @@
 
 <div id="toast-root" aria-live="polite"></div>
 <div id="detailModal" class="modal-overlay" hidden></div>
+<div id="lightboxOverlay" class="lightbox-overlay" hidden></div>
 
 <nav class="navbar">
   <div class="nav-inner">
@@ -291,6 +348,7 @@
       <div class="navlink" data-nav="#/">Accueil</div>
       <div class="navlink" data-nav="#/proposer">Proposer un sujet</div>
       <div class="navlink" data-nav="#/presentateurs">Présentateurs</div>
+      <div class="navlink" data-nav="#/sessions">Sessions</div>
       <div class="navlink" data-nav="#/dashboard">Dashboard</div>
     </div>
   </div>
@@ -326,6 +384,19 @@
     {id:"realisee", label:"Présentation réalisée", pill:"pill-realisee"}
   ];
   var DURATIONS = ["5 minutes","7 minutes","12 minutes","15 minutes","20 minutes","30 minutes","45 minutes","1 heure","Autre (à préciser)"];
+  // Rôles d'organisation d'une session (distincts des présentateurs/mentors
+  // des propositions) : liste fixe, dans cet ordre exact. "multiple" autorise
+  // plusieurs personnes sur un même rôle (seuls les Évaluateurs, ici).
+  var SESSION_ROLES = [
+    {id:"animatrice", label:"Animatrice principale", multiple:false},
+    {id:"grammarian", label:"Grammarian", multiple:false},
+    {id:"timekeeper", label:"Timekeeper & Posture Visualizer", multiple:false},
+    {id:"evaluateurs", label:"Évaluateurs", multiple:true},
+    {id:"feedback", label:"Responsable Feedback", multiple:false},
+    {id:"logistique", label:"Responsable Logistique & Digital", multiple:false},
+    {id:"communication", label:"Responsable Communication", multiple:false},
+    {id:"photographe", label:"Photographe / Documentation", multiple:false}
+  ];
   // Code d'accès du Dashboard : une commodité d'interface, pas un vrai mécanisme
   // de sécurité (visible en clair dans ce fichier, comme tout code d'une page
   // statique). Change cette valeur avant toute diffusion large de l'application.
@@ -342,6 +413,25 @@
     }catch(e){ return iso; }
   }
   function uid(){ return "p_" + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+  function fmtSessionDateTime(iso){
+    if(!iso) return "—";
+    try{
+      var d = new Date(iso);
+      var dayLabel = d.toLocaleDateString("fr-FR", {weekday:"long"});
+      dayLabel = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+      var dateLabel = d.toLocaleDateString("fr-FR", {day:"2-digit", month:"long", year:"numeric"});
+      var pad = function(n){ return (n<10?"0":"")+n; };
+      return dayLabel+" "+dateLabel+" à "+pad(d.getHours())+"h"+pad(d.getMinutes());
+    }catch(e){ return iso; }
+  }
+  function toLocalDatetimeInputValue(iso){
+    if(!iso) return "";
+    try{
+      var d = new Date(iso);
+      var pad = function(n){ return (n<10?"0":"")+n; };
+      return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());
+    }catch(e){ return ""; }
+  }
 
   /* ============================= ICONS ============================= */
   var ICONS = {
@@ -359,17 +449,28 @@
     trash:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     close:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>',
     mail:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    edit:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9" stroke-linecap="round"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    edit:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9" stroke-linecap="round"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    pin:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+    link:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 15l6-6" stroke-linecap="round"/><path d="M13 5.5l1-1a3.5 3.5 0 015 5l-1 1M11 18.5l-1 1a3.5 3.5 0 01-5-5l1-1" stroke-linecap="round"/></svg>',
+    plus:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>',
+    image:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 16l-5.5-5.5a1.5 1.5 0 00-2.1 0L3 20" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    file:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h9l5 5v13a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z" stroke-linejoin="round"/><path d="M14 3v6h6" stroke-linejoin="round"/></svg>'
   };
 
   /* ============================= STATE ============================= */
   var state = {
     dbAvailable: false,
     items: [],
+    sessions: [],
+    affiches: [],
     adminUnlocked: false,
     filters: { theme: "", status: "", q: "" },
     lastSubmitted: null,
-    confirmDeletes: {} /* id -> timestamp until which the delete button stays armed, survives re-renders */
+    confirmDeletes: {}, /* id -> timestamp until which the delete button stays armed, survives re-renders */
+    confirmDeleteSessions: {},
+    confirmDeleteAffiches: {},
+    roleAddOpen: null, /* id of the role currently showing its inline "add person" form, on the session detail page */
+    dashTab: "propositions" /* onglet actif dans le Dashboard : "propositions" ou "affiches" */
   };
 
   /* Stockage : Supabase (base de données partagée, accessible sans compte
@@ -405,6 +506,67 @@
     return out;
   }
 
+  /* Sessions CAMUSAT TALK : table Supabase séparée des propositions, sans
+     aucun lien avec les présentateurs/mentors (qui restent uniquement dans
+     "propositions"). Les rôles d'organisation sont stockés dans une seule
+     colonne JSON ("roles") plutôt que dans une table séparée, pour rester
+     cohérent avec le reste de l'app (une ligne = un enregistrement complet). */
+  var LOCAL_SESSIONS_FALLBACK = [];
+  var SESSION_FIELD_MAP = {
+    sessionNumber:"session_number", name:"name", sessionDatetime:"session_datetime",
+    location:"location", teamsLink:"teams_link", description:"description"
+  };
+  function toSessionDbRow(v){
+    var out = {};
+    Object.keys(SESSION_FIELD_MAP).forEach(function(k){ if(v[k]!==undefined) out[SESSION_FIELD_MAP[k]] = v[k]; });
+    if(v.roles!==undefined) out.roles = v.roles;
+    return out;
+  }
+  function fromSessionDbRow(r){
+    var out = { id:r.id, createdAt:r.created_at, roles: r.roles || {} };
+    Object.keys(SESSION_FIELD_MAP).forEach(function(k){ out[k] = r[SESSION_FIELD_MAP[k]]; });
+    return out;
+  }
+  function emptySessionRoles(){
+    var o = {};
+    SESSION_ROLES.forEach(function(r){ o[r.id] = []; });
+    return o;
+  }
+
+  /* Affiches CAMUSAT TALK : table Supabase séparée, sans lien avec les
+     présentateurs/mentors. Les fichiers eux-mêmes sont stockés dans le
+     bucket Supabase Storage "affiches" (voir README) ; la table ne garde
+     que les métadonnées et l'URL publique du fichier. L'association à une
+     session est optionnelle (session_id nullable) : une affiche générale
+     n'a pas besoin d'être liée à une session existante. */
+  var LOCAL_AFFICHES_FALLBACK = [];
+  var AFFICHE_FIELD_MAP = {
+    title:"title", sessionId:"session_id", fileUrl:"file_url", filePath:"file_path", mimeType:"mime_type"
+  };
+  function toAfficheDbRow(v){
+    var out = {};
+    Object.keys(AFFICHE_FIELD_MAP).forEach(function(k){ if(v[k]!==undefined) out[AFFICHE_FIELD_MAP[k]] = v[k]; });
+    return out;
+  }
+  function fromAfficheDbRow(r){
+    var out = { id:r.id, createdAt:r.created_at };
+    Object.keys(AFFICHE_FIELD_MAP).forEach(function(k){ out[k] = r[AFFICHE_FIELD_MAP[k]]; });
+    return out;
+  }
+  var AFFICHE_ACCEPTED_TYPES = ["image/png","image/jpeg","application/pdf"];
+  var AFFICHE_ACCEPTED_EXT = ["png","jpg","jpeg","pdf"];
+  var AFFICHE_MAX_BYTES = 8 * 1024 * 1024; // 8 Mo
+  function afficheFileValid(file){
+    if(!file) return false;
+    var ext = (file.name.split(".").pop()||"").toLowerCase();
+    var typeOk = AFFICHE_ACCEPTED_TYPES.indexOf(file.type)>-1 || AFFICHE_ACCEPTED_EXT.indexOf(ext)>-1;
+    return typeOk && file.size <= AFFICHE_MAX_BYTES;
+  }
+  function afficheStoragePath(file){
+    var ext = (file.name.split(".").pop()||"bin").toLowerCase();
+    return uid() + "." + ext;
+  }
+
   var sb = null;
 
   /* ============================= TOASTS ============================= */
@@ -430,11 +592,15 @@
         sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         state.dbAvailable = true;
         fetchAll();
-        setInterval(fetchAll, SUPABASE_POLL_MS);
+        fetchAllSessions();
+        fetchAllAffiches();
+        setInterval(function(){ fetchAll(); fetchAllSessions(); fetchAllAffiches(); }, SUPABASE_POLL_MS);
         return;
       }
     }catch(e){ console.warn("Supabase init failed", e); }
     state.items = LOCAL_FALLBACK;
+    state.sessions = LOCAL_SESSIONS_FALLBACK;
+    state.affiches = LOCAL_AFFICHES_FALLBACK;
     render();
   }
 
@@ -513,19 +679,243 @@
     }
   }
 
+  /* ============================= DB LAYER (Sessions) ============================= */
+  function sessionsSorted(){
+    var arr = state.sessions.slice();
+    arr.sort(function(a,b){ return (a.sessionDatetime||"").localeCompare(b.sessionDatetime||""); });
+    return arr;
+  }
+
+  function fetchAllSessions(){
+    if(!sb) return;
+    sb.from("sessions").select("*").order("session_datetime", {ascending:true}).then(function(res){
+      if(res.error){ console.warn("Supabase select error (sessions)", res.error); return; }
+      state.sessions = (res.data||[]).map(fromSessionDbRow);
+      if(currentRoute()==="proposer" || isEditingSomething()) return;
+      render();
+    });
+  }
+
+  function createSession(data, cb){
+    if(!data.roles) data.roles = emptySessionRoles();
+    if(sb){
+      var row = toSessionDbRow(data);
+      row.created_at = new Date().toISOString();
+      sb.from("sessions").insert([row]).then(function(res){
+        if(res.error){ cb(false, res.error); return; }
+        fetchAllSessions();
+        cb(true);
+      });
+    } else {
+      data.id = uid();
+      data.createdAt = new Date().toISOString();
+      LOCAL_SESSIONS_FALLBACK.unshift(data);
+      state.sessions = LOCAL_SESSIONS_FALLBACK;
+      cb(true);
+    }
+  }
+
+  function updateSession(id, patch, cb){
+    if(sb){
+      sb.from("sessions").update(toSessionDbRow(patch)).eq("id", id).then(function(res){
+        if(res.error){
+          toast("Modification impossible", res.error.message || "Réessayez dans un instant.", true);
+          if(cb) cb(false, res.error);
+          return;
+        }
+        fetchAllSessions();
+        if(cb) cb(true);
+      });
+    } else {
+      var it = LOCAL_SESSIONS_FALLBACK.find(function(x){ return x.id===id; });
+      if(it){ Object.assign(it, patch); state.sessions = LOCAL_SESSIONS_FALLBACK; render(); }
+      if(cb) cb(true);
+    }
+  }
+
+  function deleteSession(id, cb){
+    if(sb){
+      sb.from("sessions").delete().eq("id", id).then(function(res){
+        if(res.error){ cb(false, res.error); return; }
+        fetchAllSessions();
+        cb(true);
+      });
+    } else {
+      var idx = LOCAL_SESSIONS_FALLBACK.findIndex(function(x){ return x.id===id; });
+      if(idx>-1) LOCAL_SESSIONS_FALLBACK.splice(idx,1);
+      state.sessions = LOCAL_SESSIONS_FALLBACK;
+      render();
+      cb(true);
+    }
+  }
+
+  function isSessionDeleteArmed(id){
+    var exp = state.confirmDeleteSessions[id];
+    return !!exp && exp > Date.now();
+  }
+
+  function nextUpcomingSession(){
+    var now = new Date().toISOString();
+    var upcoming = sessionsSorted().filter(function(s){ return s.sessionDatetime && s.sessionDatetime >= now; });
+    return upcoming.length ? upcoming[0] : null;
+  }
+
+  /* ============================= DB LAYER (Affiches) ============================= */
+  function affichesSorted(){
+    var arr = state.affiches.slice();
+    arr.sort(function(a,b){ return (b.createdAt||"").localeCompare(a.createdAt||""); });
+    return arr;
+  }
+  function afficheById(id){
+    return state.affiches.find(function(a){ return String(a.id)===String(id); });
+  }
+  function affichesForSession(sessionId){
+    return state.affiches.filter(function(a){ return a.sessionId && String(a.sessionId)===String(sessionId); });
+  }
+
+  function fetchAllAffiches(){
+    if(!sb) return;
+    sb.from("affiches").select("*").order("created_at", {ascending:false}).then(function(res){
+      if(res.error){ console.warn("Supabase select error (affiches)", res.error); return; }
+      state.affiches = (res.data||[]).map(fromAfficheDbRow);
+      if(currentRoute()==="proposer" || isEditingSomething()) return;
+      render();
+    });
+  }
+
+  function uploadAfficheFile(file, cb){
+    if(!sb){ cb(false, {message:"Stockage indisponible."}); return; }
+    var path = afficheStoragePath(file);
+    sb.storage.from("affiches").upload(path, file, {cacheControl:"3600", upsert:false}).then(function(res){
+      if(res.error){ cb(false, res.error); return; }
+      var pub = sb.storage.from("affiches").getPublicUrl(path);
+      cb(true, null, {filePath:path, fileUrl:(pub.data||{}).publicUrl||"", mimeType:file.type||""});
+    });
+  }
+
+  function removeAfficheFile(path, cb){
+    if(!sb || !path){ if(cb) cb(true); return; }
+    sb.storage.from("affiches").remove([path]).then(function(res){
+      if(cb) cb(!res.error, res.error);
+    });
+  }
+
+  function createAffiche(file, meta, cb){
+    if(!afficheFileValid(file)){
+      cb(false, {message:"Format non pris en charge ou fichier trop volumineux (8 Mo max). Formats acceptés : PNG, JPG, PDF."});
+      return;
+    }
+    if(sb){
+      uploadAfficheFile(file, function(success, err, up){
+        if(!success){ cb(false, err); return; }
+        var row = toAfficheDbRow({ title: meta.title, sessionId: meta.sessionId||null, fileUrl: up.fileUrl, filePath: up.filePath, mimeType: up.mimeType });
+        row.created_at = new Date().toISOString();
+        sb.from("affiches").insert([row]).then(function(res){
+          if(res.error){ removeAfficheFile(up.filePath, function(){}); cb(false, res.error); return; }
+          fetchAllAffiches();
+          cb(true);
+        });
+      });
+    } else {
+      var reader = new FileReader();
+      reader.onload = function(){
+        var it = { id: uid(), title: meta.title, sessionId: meta.sessionId||null, fileUrl: reader.result, filePath:"", mimeType:file.type||"", createdAt: new Date().toISOString() };
+        LOCAL_AFFICHES_FALLBACK.unshift(it);
+        state.affiches = LOCAL_AFFICHES_FALLBACK;
+        cb(true);
+      };
+      reader.onerror = function(){ cb(false, {message:"Lecture du fichier impossible."}); };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function updateAffiche(id, patch, cb){
+    if(sb){
+      sb.from("affiches").update(toAfficheDbRow(patch)).eq("id", id).then(function(res){
+        if(res.error){
+          toast("Modification impossible", res.error.message || "Réessayez dans un instant.", true);
+          if(cb) cb(false, res.error);
+          return;
+        }
+        fetchAllAffiches();
+        if(cb) cb(true);
+      });
+    } else {
+      var it = LOCAL_AFFICHES_FALLBACK.find(function(x){ return x.id===id; });
+      if(it){ Object.assign(it, patch); state.affiches = LOCAL_AFFICHES_FALLBACK; render(); }
+      if(cb) cb(true);
+    }
+  }
+
+  function replaceAfficheFile(id, file, cb){
+    if(!afficheFileValid(file)){
+      cb(false, {message:"Format non pris en charge ou fichier trop volumineux (8 Mo max)."});
+      return;
+    }
+    var it = afficheById(id);
+    if(sb){
+      uploadAfficheFile(file, function(success, err, up){
+        if(!success){ cb(false, err); return; }
+        sb.from("affiches").update({file_url:up.fileUrl, file_path:up.filePath, mime_type:up.mimeType}).eq("id", id).then(function(res){
+          if(res.error){ removeAfficheFile(up.filePath, function(){}); cb(false, res.error); return; }
+          if(it && it.filePath) removeAfficheFile(it.filePath, function(){});
+          fetchAllAffiches();
+          cb(true);
+        });
+      });
+    } else {
+      var reader = new FileReader();
+      reader.onload = function(){
+        if(it){ it.fileUrl = reader.result; it.mimeType = file.type||""; state.affiches = LOCAL_AFFICHES_FALLBACK; render(); }
+        cb(true);
+      };
+      reader.onerror = function(){ cb(false, {message:"Lecture du fichier impossible."}); };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function deleteAffiche(id, cb){
+    var it = afficheById(id);
+    if(sb){
+      sb.from("affiches").delete().eq("id", id).then(function(res){
+        if(res.error){ cb(false, res.error); return; }
+        if(it && it.filePath) removeAfficheFile(it.filePath, function(){});
+        fetchAllAffiches();
+        cb(true);
+      });
+    } else {
+      var idx = LOCAL_AFFICHES_FALLBACK.findIndex(function(x){ return x.id===id; });
+      if(idx>-1) LOCAL_AFFICHES_FALLBACK.splice(idx,1);
+      state.affiches = LOCAL_AFFICHES_FALLBACK;
+      render();
+      cb(true);
+    }
+  }
+
+  function isAfficheDeleteArmed(id){
+    var exp = state.confirmDeleteAffiches[id];
+    return !!exp && exp > Date.now();
+  }
+
   /* ============================= ROUTER ============================= */
   function currentRoute(){
     var h = location.hash || "#/";
     if(h.indexOf("#/proposer")===0) return "proposer";
     if(h.indexOf("#/presentateurs")===0) return "presentateurs";
+    if(h.indexOf("#/sessions")===0) return "sessions";
+    if(h.indexOf("#/affiches")===0) return "affiches";
     if(h.indexOf("#/dashboard")===0) return "dashboard";
     return "accueil";
+  }
+  function sessionIdFromHash(){
+    var m = /^#\/sessions\/(.+)$/.exec(location.hash||"");
+    return m ? decodeURIComponent(m[1]) : null;
   }
   function navTo(hash){ location.hash = hash; }
 
   function updateActiveNav(){
     var route = currentRoute();
-    var map = {accueil:"#/", proposer:"#/proposer", presentateurs:"#/presentateurs", dashboard:"#/dashboard"};
+    var map = {accueil:"#/", proposer:"#/proposer", presentateurs:"#/presentateurs", sessions:"#/sessions", dashboard:"#/dashboard"};
     document.querySelectorAll(".navlink").forEach(function(el){
       el.classList.toggle("active", el.getAttribute("data-nav")===map[route]);
     });
@@ -538,19 +928,29 @@
     if(t){ navTo(t.getAttribute("data-nav")); }
     var d = e.target.closest("[data-detail]");
     if(d){ openDetailModal(d.getAttribute("data-detail")); }
+    var p = e.target.closest("[data-poster]");
+    if(p){ openPosterLightbox(p.getAttribute("data-poster")); }
     // Ferme la fenêtre de détail si on clique sur le fond sombre ou sur le
     // bouton de fermeture (mais pas sur son contenu, qui n'a pas cet attribut).
     if(e.target.id==="detailModal" || e.target.closest("[data-modal-close]")){ closeDetailModal(); }
+    // Ferme l'affiche en grand format (fond sombre ou bouton de fermeture).
+    if(e.target.id==="lightboxOverlay" || e.target.closest("[data-lightbox-close]")){ closePosterLightbox(); }
   });
   document.addEventListener("keydown", function(e){
     if(e.key==="Escape"){
+      var lightbox = document.getElementById("lightboxOverlay");
+      if(lightbox && !lightbox.hidden){ closePosterLightbox(); return; }
       var modal = document.getElementById("detailModal");
       if(modal && !modal.hidden) closeDetailModal();
       return;
     }
     if(e.key==="Enter" || e.key===" "){
       var card = e.target.closest && e.target.closest("[data-detail]");
-      if(card){ e.preventDefault(); openDetailModal(card.getAttribute("data-detail")); }
+      if(card){ e.preventDefault(); openDetailModal(card.getAttribute("data-detail")); return; }
+      var poster = e.target.closest && e.target.closest("[data-poster]");
+      if(poster){ e.preventDefault(); openPosterLightbox(poster.getAttribute("data-poster")); return; }
+      var navBtn = e.target.closest && e.target.closest("[data-nav][role='button']");
+      if(navBtn){ e.preventDefault(); navTo(navBtn.getAttribute("data-nav")); }
     }
   });
 
@@ -596,6 +996,34 @@
     if(!modal || modal.hidden) return;
     modal.hidden = true;
     modal.innerHTML = "";
+    document.body.classList.remove("modal-open");
+  }
+
+  /* ============================= AFFICHE EN GRAND FORMAT (lightbox) ============================= */
+  function openPosterLightbox(id){
+    var a = afficheById(id);
+    if(!a) return;
+    var isPdf = a.mimeType === "application/pdf";
+    var overlay = document.getElementById("lightboxOverlay");
+    overlay.innerHTML =
+      '<button type="button" class="lightbox-close" data-lightbox-close aria-label="Fermer">'+ICONS.close+'</button>'+
+      '<div class="lightbox-card">'+
+        (isPdf ?
+          '<a class="btn btn-primary" href="'+esc(a.fileUrl)+'" target="_blank" rel="noopener">'+ICONS.download+' Ouvrir le PDF dans un nouvel onglet</a>'
+          : '<img src="'+esc(a.fileUrl)+'" alt="'+esc(a.title)+'">')+
+        '<div class="lightbox-title">'+esc(a.title)+'</div>'+
+      '</div>';
+    overlay.hidden = false;
+    document.body.classList.add("modal-open");
+    var closeBtn = overlay.querySelector(".lightbox-close");
+    if(closeBtn) closeBtn.focus();
+  }
+
+  function closePosterLightbox(){
+    var overlay = document.getElementById("lightboxOverlay");
+    if(!overlay || overlay.hidden) return;
+    overlay.hidden = true;
+    overlay.innerHTML = "";
     document.body.classList.remove("modal-open");
   }
 
@@ -706,6 +1134,8 @@
     if(route==="accueil") view.innerHTML = renderHome();
     else if(route==="proposer") view.innerHTML = renderProposer();
     else if(route==="presentateurs") view.innerHTML = renderPresentateurs();
+    else if(route==="sessions") view.innerHTML = renderSessions();
+    else if(route==="affiches") view.innerHTML = renderAffichesGallery();
     else if(route==="dashboard") view.innerHTML = renderDashboard();
     window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
     bindRouteEvents(route);
@@ -759,11 +1189,58 @@
       '</div>'+
     '</section>'+
     '<section class="wrap" style="padding-top:0">'+
+      '<div class="poster-home-card" data-nav="#/affiches" role="button" tabindex="0" aria-label="Voir les affiches CAMUSAT TALK">'+
+        '<div class="poster-home-icon">'+ICONS.image+'</div>'+
+        '<div><h3>Nos affiches</h3><p>Retrouvez les affiches des sessions CAMUSAT TALK, en un coup d\'œil.</p></div>'+
+        '<span class="arrow" aria-hidden="true" style="font-size:20px;font-weight:700">→</span>'+
+      '</div>'+
+    '</section>'+
+    '<section class="wrap" style="padding-top:0">'+
       '<div style="background:var(--navy-tint);border-radius:20px;padding:36px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">'+
         '<div><h3 style="margin:0 0 6px;font-size:19px">Une idée à partager ?</h3><p style="margin:0">Rejoignez les collaborateurs qui font déjà vivre CAMUSAT TALK.</p></div>'+
         '<button class="btn btn-outline-navy" style="border-color:var(--navy)" data-nav="#/proposer">Proposer un sujet</button>'+
       '</div>'+
+    '</section>'+
+    renderNextSessionBanner();
+  }
+
+  function renderNextSessionBanner(){
+    var s = nextUpcomingSession();
+    if(!s) return "";
+    var line2 = [s.location, s.teamsLink ? "Microsoft Teams" : ""].filter(Boolean).join(" | ");
+    return '<section class="wrap" style="padding-top:0">'+
+      '<div class="session-banner" data-nav="#/sessions/'+esc(s.id)+'" role="button" tabindex="0" aria-label="Voir les détails de la session '+esc(s.name||"")+'">'+
+        '<div class="session-banner-label">'+ICONS.calendar+' Prochaine session CAMUSAT TALK</div>'+
+        '<h3>Session #'+esc(s.sessionNumber||"—")+' – '+esc(s.name||"Sans titre")+'</h3>'+
+        '<p>'+fmtSessionDateTime(s.sessionDatetime)+'</p>'+
+        (line2 ? '<p>'+esc(line2)+'</p>' : '')+
+        '<span class="session-banner-cta">Voir les détails →</span>'+
+      '</div>'+
     '</section>';
+  }
+
+  /* ============================= AFFICHES (galerie publique) ============================= */
+  function renderAffichesGallery(){
+    var list = affichesSorted();
+    return '<section class="wrap">'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-nav="#/" style="margin-bottom:18px;padding-left:0">← Retour à l\'accueil</button>'+
+      '<div class="section-head">'+
+        '<span class="kicker">Galerie</span>'+
+        '<h2>Nos affiches CAMUSAT TALK</h2>'+
+        '<p>Retrouvez les affiches des sessions CAMUSAT TALK. Cliquez sur une affiche pour l\'ouvrir en grand format.</p>'+
+      '</div>'+
+      (list.length ? '<div class="poster-grid">'+list.map(renderPosterCard).join("")+'</div>' : '<div class="empty-state">'+ICONS.empty+'<div>Aucune affiche disponible pour le moment.</div></div>')+
+    '</section>';
+  }
+
+  function renderPosterCard(a){
+    var s = a.sessionId ? state.sessions.find(function(x){ return String(x.id)===String(a.sessionId); }) : null;
+    var isPdf = a.mimeType === "application/pdf";
+    return '<div class="poster-card" data-poster="'+esc(a.id)+'" role="button" tabindex="0" aria-label="Voir l\'affiche '+esc(a.title)+'">'+
+      '<div class="poster-thumb">'+(isPdf ? '<div class="pdf-badge">'+ICONS.file+'<span style="font-size:11.5px;font-weight:700">PDF</span></div>' : '<img src="'+esc(a.fileUrl)+'" alt="'+esc(a.title)+'" loading="lazy">')+'</div>'+
+      '<div class="poster-title">'+esc(a.title)+'</div>'+
+      (s ? '<div class="poster-session">Session #'+esc(s.sessionNumber||"—")+' – '+esc(s.name||"")+'</div>' : '')+
+    '</div>';
   }
 
   function statusPill(id){
@@ -1000,6 +1477,267 @@
     if(fq) fq.addEventListener("input", function(){ state.filters.q = fq.value; refresh(); });
   }
 
+  /* ============================= SESSIONS =============================
+     Fonctionnalité indépendante des propositions/présentateurs : aucune
+     donnée présentateur/mentor n'est dupliquée ni ré-affichée ici. La
+     consultation (liste + détails + rôles) est ouverte à tous ; la
+     création/modification/suppression d'une session est réservée à
+     l'espace administrateur (même code d'accès que le Dashboard), mais
+     l'ajout et le retrait d'une personne à un rôle sont ouverts à tous,
+     sans code d'accès. */
+  function renderSessions(){
+    var id = sessionIdFromHash();
+    return id ? renderSessionDetail(id) : renderSessionsList();
+  }
+
+  function renderSessionsList(){
+    var list = sessionsSorted();
+    return '<section class="wrap">'+
+      '<div class="toolbar" style="margin-bottom:22px">'+
+        '<div class="section-head" style="margin:0">'+
+          '<span class="kicker">Organisation</span>'+
+          '<h2 style="margin-bottom:0">Sessions CAMUSAT TALK</h2>'+
+        '</div>'+
+        (state.adminUnlocked ? '<button class="btn btn-primary btn-sm" id="btnNewSession">'+ICONS.plus+' Nouvelle session</button>' : '')+
+      '</div>'+
+      (list.length ? '<div class="grid-cards" id="sessionsGrid">'+list.map(renderSessionCard).join("")+'</div>' : renderSessionsEmptyState())+
+    '</section>';
+  }
+
+  function renderSessionCard(s){
+    var next = nextUpcomingSession();
+    var isNext = !!next && next.id===s.id;
+    return '<div class="talk-card" data-nav="#/sessions/'+esc(s.id)+'" role="button" tabindex="0" aria-label="Voir la session '+esc(s.name||"")+'">'+
+      '<div class="mc-top">'+(isNext ? '<span class="pill pill-validee">Prochaine session</span>' : '<span class="theme-tag">Session #'+esc(s.sessionNumber||"—")+'</span>')+'</div>'+
+      '<h3>'+esc(s.name||"Session sans nom")+'</h3>'+
+      '<div class="meta-row">'+ICONS.calendar+' '+fmtSessionDateTime(s.sessionDatetime)+'</div>'+
+      (s.location ? '<div class="meta-row">'+ICONS.pin+' '+esc(s.location)+'</div>' : '')+
+    '</div>';
+  }
+
+  function renderSessionsEmptyState(){
+    return '<div class="empty-state">'+ICONS.empty+'<div>'+(state.adminUnlocked ? "Aucune session pour le moment. Créez la première session CAMUSAT TALK." : "Aucune session n'a encore été annoncée. Revenez bientôt.")+'</div></div>';
+  }
+
+  function renderSessionDetail(id){
+    var s = state.sessions.find(function(x){ return String(x.id)===String(id); });
+    if(!s){
+      return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Cette session est introuvable ou a été supprimée.</div>'+
+        '<button type="button" class="btn btn-outline-navy" data-nav="#/sessions" style="margin-top:18px">← Retour aux sessions</button>'+
+      '</div></section>';
+    }
+    var roles = s.roles || emptySessionRoles();
+    return '<section class="wrap">'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-nav="#/sessions" style="margin-bottom:18px;padding-left:0">← Retour aux sessions</button>'+
+      '<div class="toolbar" style="margin-bottom:22px">'+
+        '<div class="section-head" style="margin:0">'+
+          '<span class="kicker">Session #'+esc(s.sessionNumber||"—")+'</span>'+
+          '<h2 style="margin-bottom:0">'+esc(s.name||"Session sans nom")+'</h2>'+
+        '</div>'+
+        (state.adminUnlocked ? '<div style="display:flex;gap:10px">'+
+          '<button type="button" class="btn btn-outline-navy btn-sm" id="btnEditSession">'+ICONS.edit+' Modifier</button>'+
+          '<button type="button" class="icon-btn btn-delete-session'+(isSessionDeleteArmed(s.id)?" confirm":"")+'" data-id="'+esc(s.id)+'" title="'+(isSessionDeleteArmed(s.id)?"Cliquer à nouveau pour confirmer la suppression":"Supprimer cette session")+'">'+ICONS.trash+'</button>'+
+        '</div>' : '')+
+      '</div>'+
+      '<div class="form-card" style="margin-bottom:30px">'+
+        '<div class="detail-grid">'+
+          '<div class="detail-item"><span class="dt-label">Date et heure</span><span class="dt-value">'+fmtSessionDateTime(s.sessionDatetime)+'</span></div>'+
+          '<div class="detail-item"><span class="dt-label">Lieu</span><span class="dt-value">'+esc(s.location||"—")+'</span></div>'+
+          '<div class="detail-item"><span class="dt-label">Lien Microsoft Teams</span><span class="dt-value">'+(s.teamsLink ? '<a href="'+esc(s.teamsLink)+'" target="_blank" rel="noopener">'+esc(s.teamsLink)+'</a>' : "—")+'</span></div>'+
+        '</div>'+
+        (s.description ? '<div class="detail-block"><h4>Description</h4><p>'+esc(s.description)+'</p></div>' : '')+
+      '</div>'+
+      '<div class="section-head" style="margin-bottom:16px">'+
+        '<span class="kicker">Organisation</span>'+
+        '<h3 style="margin:0;font-size:18px">Rôles de la session</h3>'+
+      '</div>'+
+      '<div class="roles-list">'+
+        SESSION_ROLES.map(function(r){ return renderRoleRow(s, r, roles); }).join("")+
+      '</div>'+
+      renderSessionPosterBlock(s)+
+    '</section>';
+  }
+
+  function renderSessionPosterBlock(s){
+    var list = affichesForSession(s.id);
+    if(!list.length) return "";
+    return '<div class="section-head" style="margin:30px 0 16px">'+
+        '<span class="kicker">Communication</span>'+
+        '<h3 style="margin:0;font-size:18px">Affiche de la session</h3>'+
+      '</div>'+
+      '<div class="poster-grid" style="max-width:'+(list.length>1?"100%":"240px")+'">'+
+        list.map(renderPosterCard).join("")+
+      '</div>';
+  }
+
+  function renderRoleRow(s, r, roles){
+    var people = roles[r.id] || [];
+    var addKey = s.id+"::"+r.id;
+    var addOpen = state.roleAddOpen === addKey;
+    var canAdd = r.multiple || people.length===0;
+    return '<div class="role-row" data-role="'+r.id+'">'+
+      '<span class="role-label">'+esc(r.label)+'</span>'+
+      '<div class="role-people">'+
+        (people.length ? people.map(function(name, idx){
+          return '<span class="role-chip">'+esc(name)+'<button type="button" class="role-chip-remove" data-remove-role="'+r.id+'" data-remove-idx="'+idx+'" title="Retirer '+esc(name)+'">'+ICONS.close+'</button></span>';
+        }).join("") : '<span class="role-empty">Non assigné</span>')+
+        (addOpen ?
+            '<form class="role-add-form" data-role-add="'+r.id+'">'+
+              '<input type="text" placeholder="Nom et prénom" required>'+
+              '<button type="submit" class="btn btn-primary btn-sm">Ajouter</button>'+
+              '<button type="button" class="btn btn-ghost btn-sm" data-role-add-cancel="'+r.id+'">Annuler</button>'+
+            '</form>'
+          : (canAdd ? '<button type="button" class="icon-btn" data-role-add-open="'+r.id+'" title="Ajouter une personne à ce rôle">'+ICONS.plus+'</button>' : '')
+        )+
+      '</div>'+
+    '</div>';
+  }
+
+  function openSessionFormModal(id){
+    var s = id ? state.sessions.find(function(x){ return String(x.id)===String(id); }) : null;
+    var modal = document.getElementById("detailModal");
+    modal.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true" aria-label="'+(s?"Modifier la session":"Nouvelle session")+'" style="max-width:640px">'+
+        '<div class="modal-head">'+
+          '<div>'+
+            '<span class="theme-tag">'+ICONS.calendar+' '+(s?"Modifier la session":"Nouvelle session")+'</span>'+
+            '<h3 class="modal-title">'+(s?esc(s.name||"Session"):"Créer une session CAMUSAT TALK")+'</h3>'+
+          '</div>'+
+          '<button type="button" class="modal-close" data-modal-close aria-label="Fermer">'+ICONS.close+'</button>'+
+        '</div>'+
+        '<div class="modal-body">'+
+          '<div class="form-grid" style="margin-top:6px">'+
+            editField("sfName","Nom de la session",s?s.name:"","text","full")+
+            editField("sfNumber","Numéro de la session",s?s.sessionNumber:"")+
+            editField("sfDatetime","Date et heure",s?toLocalDatetimeInputValue(s.sessionDatetime):"","datetime-local")+
+            editField("sfLocation","Lieu",s?s.location:"","text","full")+
+            editField("sfTeamsLink","Lien Microsoft Teams",s?s.teamsLink:"","url","full")+
+            editTextarea("sfDescription","Description (optionnelle)",s?s.description:"","full")+
+          '</div>'+
+          '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px">'+
+            '<button type="button" class="btn btn-ghost" data-modal-close>Annuler</button>'+
+            '<button type="button" class="btn btn-primary" id="btnSaveSession">'+(s?"Enregistrer les modifications":"Créer la session")+'</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+    var first = document.getElementById("sfName");
+    if(first) first.focus();
+
+    document.getElementById("btnSaveSession").addEventListener("click", function(){
+      var dtVal = document.getElementById("sfDatetime").value;
+      var data = {
+        name: document.getElementById("sfName").value.trim(),
+        sessionNumber: document.getElementById("sfNumber").value.trim(),
+        sessionDatetime: dtVal ? new Date(dtVal).toISOString() : "",
+        location: document.getElementById("sfLocation").value.trim(),
+        teamsLink: document.getElementById("sfTeamsLink").value.trim(),
+        description: document.getElementById("sfDescription").value.trim()
+      };
+      var required = ["name","sessionNumber","sessionDatetime","location","teamsLink"];
+      var missing = required.some(function(k){ return !data[k]; });
+      if(missing){
+        toast("Champs incomplets", "Merci de remplir tous les champs (seule la description est optionnelle).", true);
+        return;
+      }
+      var btn = document.getElementById("btnSaveSession");
+      btn.disabled = true; btn.textContent = "Enregistrement…";
+      if(s){
+        updateSession(s.id, data, function(success, err){
+          if(success){ toast("Session modifiée", data.name); closeDetailModal(); }
+          else{ btn.disabled=false; btn.textContent="Enregistrer les modifications"; toast("Modification impossible", (err&&err.message)||"Réessayez.", true); }
+        });
+      } else {
+        createSession(data, function(success, err){
+          if(success){ toast("Session créée", data.name); closeDetailModal(); render(); }
+          else{ btn.disabled=false; btn.textContent="Créer la session"; toast("Création impossible", (err&&err.message)||"Réessayez.", true); }
+        });
+      }
+    });
+  }
+
+  function bindSessionsEvents(){
+    var id = sessionIdFromHash();
+    if(id) bindSessionDetailEvents(id);
+    else bindSessionsListEvents();
+  }
+
+  function bindSessionsListEvents(){
+    var btn = document.getElementById("btnNewSession");
+    if(btn) btn.addEventListener("click", function(){ openSessionFormModal(null); });
+  }
+
+  function bindSessionDetailEvents(id){
+    var editBtn = document.getElementById("btnEditSession");
+    if(editBtn) editBtn.addEventListener("click", function(){ openSessionFormModal(id); });
+
+    document.querySelectorAll(".btn-delete-session").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var sid = btn.getAttribute("data-id");
+        if(!isSessionDeleteArmed(sid)){
+          state.confirmDeleteSessions[sid] = Date.now() + 4000;
+          btn.classList.add("confirm");
+          btn.title = "Cliquer à nouveau pour confirmer la suppression";
+          return;
+        }
+        delete state.confirmDeleteSessions[sid];
+        btn.disabled = true;
+        deleteSession(sid, function(success, err){
+          if(success){ toast("Session supprimée", ""); navTo("#/sessions"); }
+          else{ btn.disabled = false; toast("Suppression impossible", (err && err.message) || "Réessayez.", true); }
+        });
+      });
+    });
+
+    document.querySelectorAll("[data-role-add-open]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        state.roleAddOpen = id+"::"+btn.getAttribute("data-role-add-open");
+        render();
+      });
+    });
+    document.querySelectorAll("[data-role-add-cancel]").forEach(function(btn){
+      btn.addEventListener("click", function(){ state.roleAddOpen = null; render(); });
+    });
+    document.querySelectorAll("[data-role-add]").forEach(function(form){
+      form.addEventListener("submit", function(e){
+        e.preventDefault();
+        var roleId = form.getAttribute("data-role-add");
+        var input = form.querySelector("input");
+        var name = input.value.trim();
+        if(!name) return;
+        var s = state.sessions.find(function(x){ return String(x.id)===String(id); });
+        if(!s) return;
+        var roles = s.roles || emptySessionRoles();
+        var roleCfg = SESSION_ROLES.find(function(r){ return r.id===roleId; });
+        var current = roles[roleId] || [];
+        var updated = (roleCfg && roleCfg.multiple) ? current.concat([name]) : [name];
+        var newRoles = Object.assign({}, roles);
+        newRoles[roleId] = updated;
+        state.roleAddOpen = null;
+        updateSession(id, {roles:newRoles}, function(success){
+          if(success && roleCfg) toast("Rôle mis à jour", roleCfg.label+" : "+name);
+        });
+      });
+    });
+    document.querySelectorAll("[data-remove-role]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var roleId = btn.getAttribute("data-remove-role");
+        var idx = parseInt(btn.getAttribute("data-remove-idx"),10);
+        var s = state.sessions.find(function(x){ return String(x.id)===String(id); });
+        if(!s) return;
+        var roles = s.roles || emptySessionRoles();
+        var current = (roles[roleId]||[]).slice();
+        current.splice(idx,1);
+        var newRoles = Object.assign({}, roles);
+        newRoles[roleId] = current;
+        updateSession(id, {roles:newRoles}, function(success){
+          if(success) toast("Personne retirée", "");
+        });
+      });
+    });
+  }
+
   /* ============================= DASHBOARD ============================= */
   function renderDashboard(){
     if(!state.adminUnlocked){
@@ -1014,6 +1752,15 @@
       '</div></section>';
     }
 
+    var tabsHtml = '<div class="dash-tabs">'+
+      '<button type="button" class="dash-tab'+(state.dashTab!=="affiches"?" active":"")+'" data-dash-tab="propositions">Propositions</button>'+
+      '<button type="button" class="dash-tab'+(state.dashTab==="affiches"?" active":"")+'" data-dash-tab="affiches">Affiches</button>'+
+    '</div>';
+
+    if(state.dashTab === "affiches"){
+      return '<section class="wrap">'+tabsHtml+renderDashboardAffiches()+'</section>';
+    }
+
     var total = state.items.length;
     var counts = {};
     STATUSES.forEach(function(s){ counts[s.id] = 0; });
@@ -1022,7 +1769,7 @@
     var themeOptions = THEMES.map(function(t){ return '<option value="'+t.id+'">'+esc(t.label)+'</option>'; }).join("");
     var list = itemsSorted().filter(function(it){ return !state.filters.dashTheme || it.theme===state.filters.dashTheme; });
 
-    return '<section class="wrap">'+
+    return '<section class="wrap">'+tabsHtml+
       '<div class="toolbar" style="margin-bottom:22px">'+
         '<div class="section-head" style="margin:0">'+
           '<span class="kicker">Administration</span>'+
@@ -1052,6 +1799,111 @@
         '</tr></thead><tbody id="dashBody">'+ renderDashRows(list) +'</tbody></table>'+
       '</div>'+
     '</section>';
+  }
+
+  /* ---------- Affiches (Dashboard) ---------- */
+  function renderDashboardAffiches(){
+    var list = affichesSorted();
+    return '<div class="toolbar" style="margin-bottom:22px">'+
+        '<div class="section-head" style="margin:0">'+
+          '<span class="kicker">Communication</span>'+
+          '<h2 style="margin-bottom:0">Gestion des affiches</h2>'+
+        '</div>'+
+        '<button class="btn btn-primary btn-sm" id="btnNewAffiche">'+ICONS.plus+' Ajouter une affiche</button>'+
+      '</div>'+
+      '<div class="table-wrap">'+
+        '<table><thead><tr><th>Affiche</th><th>Session associée</th><th>Date d\'ajout</th><th></th></tr></thead>'+
+        '<tbody id="afficheBody">'+renderAfficheRows(list)+'</tbody></table>'+
+      '</div>';
+  }
+
+  function renderAfficheRows(list){
+    if(!list.length){ return '<tr><td colspan="4" style="text-align:center;color:var(--text-soft);padding:40px 16px">Aucune affiche pour le moment.</td></tr>'; }
+    return list.map(function(a){
+      var s = a.sessionId ? state.sessions.find(function(x){ return String(x.id)===String(a.sessionId); }) : null;
+      var isPdf = a.mimeType === "application/pdf";
+      return '<tr data-id="'+esc(a.id)+'">'+
+        '<td><div style="display:flex;align-items:center;gap:10px">'+
+          '<div class="poster-row-thumb">'+(isPdf ? ICONS.file : '<img src="'+esc(a.fileUrl)+'" alt="">')+'</div>'+
+          '<span class="cell-name">'+esc(a.title)+'</span>'+
+        '</div></td>'+
+        '<td class="cell-sub">'+(s ? "Session #"+esc(s.sessionNumber||"—")+" – "+esc(s.name||"") : "—")+'</td>'+
+        '<td class="cell-sub">'+fmtDate((a.createdAt||"").slice(0,10))+'</td>'+
+        '<td><div style="display:flex;gap:6px;justify-content:flex-end">'+
+          '<button type="button" class="icon-btn btn-edit-affiche" data-id="'+esc(a.id)+'" title="Modifier cette affiche">'+ICONS.edit+'</button>'+
+          '<button type="button" class="icon-btn btn-delete-affiche'+(isAfficheDeleteArmed(a.id)?" confirm":"")+'" data-id="'+esc(a.id)+'" title="'+(isAfficheDeleteArmed(a.id)?"Cliquer à nouveau pour confirmer la suppression":"Supprimer cette affiche")+'">'+ICONS.trash+'</button>'+
+        '</div></td>'+
+      '</tr>';
+    }).join("");
+  }
+
+  function openAfficheFormModal(id){
+    var a = id ? afficheById(id) : null;
+    var sessionOptions = '<option value="">Aucune session (affiche générale)</option>' +
+      sessionsSorted().map(function(s){ return '<option value="'+esc(s.id)+'"'+(a && String(a.sessionId)===String(s.id) ? " selected":"")+'>Session #'+esc(s.sessionNumber||"—")+' – '+esc(s.name||"")+'</option>'; }).join("");
+    var modal = document.getElementById("detailModal");
+    modal.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true" aria-label="'+(a?"Modifier l\'affiche":"Nouvelle affiche")+'" style="max-width:560px">'+
+        '<div class="modal-head">'+
+          '<div>'+
+            '<span class="theme-tag">'+ICONS.image+' '+(a?"Modifier l'affiche":"Nouvelle affiche")+'</span>'+
+            '<h3 class="modal-title">'+(a?esc(a.title):"Ajouter une affiche")+'</h3>'+
+          '</div>'+
+          '<button type="button" class="modal-close" data-modal-close aria-label="Fermer">'+ICONS.close+'</button>'+
+        '</div>'+
+        '<div class="modal-body">'+
+          '<div class="form-grid" style="margin-top:6px">'+
+            editField("afTitle","Titre de l\'affiche",a?a.title:"","text","full")+
+            '<div class="field full"><label for="afSession">Session associée</label><select id="afSession">'+sessionOptions+'</select></div>'+
+            '<div class="field full">'+
+              '<label for="afFile">'+(a?"Remplacer le fichier (optionnel)":"Fichier (PNG, JPG ou PDF, 8 Mo max)")+'</label>'+
+              '<input type="file" id="afFile" accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf">'+
+            '</div>'+
+          '</div>'+
+          '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px">'+
+            '<button type="button" class="btn btn-ghost" data-modal-close>Annuler</button>'+
+            '<button type="button" class="btn btn-primary" id="btnSaveAffiche">'+(a?"Enregistrer les modifications":"Ajouter l\'affiche")+'</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+    var first = document.getElementById("afTitle");
+    if(first) first.focus();
+
+    document.getElementById("btnSaveAffiche").addEventListener("click", function(){
+      var title = document.getElementById("afTitle").value.trim();
+      var sessionId = document.getElementById("afSession").value || null;
+      var fileInput = document.getElementById("afFile");
+      var file = fileInput.files[0] || null;
+
+      if(!title){ toast("Titre manquant", "Merci de donner un titre à l'affiche.", true); return; }
+      if(!a && !file){ toast("Fichier manquant", "Merci de sélectionner un fichier (PNG, JPG ou PDF).", true); return; }
+
+      var btn = document.getElementById("btnSaveAffiche");
+      btn.disabled = true; btn.textContent = "Enregistrement…";
+
+      function afterSave(success, err){
+        if(success){
+          toast(a?"Affiche modifiée":"Affiche ajoutée", title);
+          closeDetailModal();
+          if(!a) render();
+        } else {
+          btn.disabled = false; btn.textContent = a?"Enregistrer les modifications":"Ajouter l'affiche";
+          toast(a?"Modification impossible":"Ajout impossible", (err&&err.message)||"Réessayez.", true);
+        }
+      }
+
+      if(a){
+        updateAffiche(a.id, {title:title, sessionId:sessionId}, function(success, err){
+          if(!success){ afterSave(false, err); return; }
+          if(file) replaceAfficheFile(a.id, file, afterSave);
+          else afterSave(true);
+        });
+      } else {
+        createAffiche(file, {title:title, sessionId:sessionId}, afterSave);
+      }
+    });
   }
 
   function isDeleteArmed(id){
@@ -1096,6 +1948,15 @@
       return;
     }
 
+    document.querySelectorAll("[data-dash-tab]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        state.dashTab = btn.getAttribute("data-dash-tab");
+        render();
+      });
+    });
+
+    if(state.dashTab === "affiches"){ bindDashboardAffichesEvents(); return; }
+
     var dt = document.getElementById("dashThemeFilter");
     if(dt){
       dt.value = state.filters.dashTheme || "";
@@ -1112,6 +1973,35 @@
     if(csvBtn) csvBtn.addEventListener("click", exportCsv);
     var xlsxBtn = document.getElementById("btnExportXlsx");
     if(xlsxBtn) xlsxBtn.addEventListener("click", exportXlsx);
+  }
+
+  function bindDashboardAffichesEvents(){
+    var btn = document.getElementById("btnNewAffiche");
+    if(btn) btn.addEventListener("click", function(){ openAfficheFormModal(null); });
+    bindAfficheRowEvents();
+  }
+
+  function bindAfficheRowEvents(){
+    document.querySelectorAll(".btn-edit-affiche").forEach(function(btn){
+      btn.addEventListener("click", function(){ openAfficheFormModal(btn.getAttribute("data-id")); });
+    });
+    document.querySelectorAll(".btn-delete-affiche").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.getAttribute("data-id");
+        if(!isAfficheDeleteArmed(id)){
+          state.confirmDeleteAffiches[id] = Date.now() + 4000;
+          btn.classList.add("confirm");
+          btn.title = "Cliquer à nouveau pour confirmer la suppression";
+          return;
+        }
+        delete state.confirmDeleteAffiches[id];
+        btn.disabled = true;
+        deleteAffiche(id, function(success, err){
+          if(success){ toast("Affiche supprimée", ""); }
+          else{ btn.disabled = false; toast("Suppression impossible", (err && err.message) || "Réessayez.", true); }
+        });
+      });
+    });
   }
 
   function bindTableRowEvents(){
@@ -1224,6 +2114,7 @@
   function bindRouteEvents(route){
     if(route==="proposer") bindProposerForm();
     else if(route==="presentateurs") bindPresentateursEvents();
+    else if(route==="sessions") bindSessionsEvents();
     else if(route==="dashboard") bindDashboardEvents();
   }
 

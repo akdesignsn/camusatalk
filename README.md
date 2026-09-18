@@ -11,7 +11,9 @@ L'application permet à un collaborateur de proposer un sujet en moins de deux m
 - **Page d'accueil** : présentation du programme, statistiques en direct, accès rapide aux deux actions principales.
 - **Formulaire de proposition** : informations du présentateur, sujet, thématique, mentor accompagnateur, objectif, durée et date souhaitée — avec validation des champs et message de confirmation.
 - **Page Présentateurs** : les propositions sous forme de cartes, avec filtres par thématique et par statut, et une recherche libre.
-- **Dashboard administrateur** (protégé par un code d'accès) : vue d'ensemble chiffrée, modification du statut et du mentor de chaque proposition, suppression d'une proposition, export des données en CSV et en Excel (.xlsx).
+- **Page Sessions** : gestion des sessions CAMUSAT TALK (une session = une date, un lieu, un lien Teams, et une organisation de rôles propre — voir plus bas), avec une bannière sur la page d'accueil annonçant la prochaine session à venir.
+- **Affiches** : galerie publique accessible depuis la page d'accueil (« Nos affiches »), et gestion des affiches (ajout, remplacement, suppression, association à une session) réservée à l'espace administrateur — voir plus bas.
+- **Dashboard administrateur** (protégé par un code d'accès) : vue d'ensemble chiffrée, modification du statut et du mentor de chaque proposition, suppression d'une proposition, export des données en CSV et en Excel (.xlsx), et onglet de gestion des affiches.
 - Identité visuelle Camusat (bleu foncé `#203261`, rouge accent), interface responsive (mobile / tablette / desktop), thème clair et sombre.
 
 ## Technologies utilisées
@@ -61,19 +63,70 @@ create policy "public insert" on propositions for insert with check (true);
 create policy "public select" on propositions for select using (true);
 create policy "public update" on propositions for update using (true) with check (true);
 create policy "public delete" on propositions for delete using (true);
+
+create table sessions (
+  id uuid primary key default gen_random_uuid(),
+  session_number text,
+  name text,
+  session_datetime timestamptz,
+  location text,
+  teams_link text,
+  description text,
+  roles jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+alter table sessions enable row level security;
+
+create policy "public insert" on sessions for insert with check (true);
+create policy "public select" on sessions for select using (true);
+create policy "public update" on sessions for update using (true) with check (true);
+create policy "public delete" on sessions for delete using (true);
+
+create table affiches (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  session_id uuid references sessions(id) on delete set null,
+  file_url text not null,
+  file_path text not null,
+  mime_type text,
+  created_at timestamptz not null default now()
+);
+
+alter table affiches enable row level security;
+
+create policy "public insert" on affiches for insert with check (true);
+create policy "public select" on affiches for select using (true);
+create policy "public update" on affiches for update using (true) with check (true);
+create policy "public delete" on affiches for delete using (true);
+
+-- Bucket de stockage pour les fichiers des affiches (PNG/JPG/PDF).
+insert into storage.buckets (id, name, public) values ('affiches', 'affiches', true)
+  on conflict (id) do nothing;
+
+create policy "public read affiches bucket" on storage.objects for select using (bucket_id = 'affiches');
+create policy "public insert affiches bucket" on storage.objects for insert with check (bucket_id = 'affiches');
+create policy "public update affiches bucket" on storage.objects for update using (bucket_id = 'affiches');
+create policy "public delete affiches bucket" on storage.objects for delete using (bucket_id = 'affiches');
 ```
 
 Puis copie **Project URL** et la clé **anon public / publishable** depuis *Project Settings → API Keys*, et remplace les deux constantes dans `index.html`.
+
+**À propos de la table `sessions`** : elle est totalement indépendante de `propositions` — aucune clé étrangère, aucun champ dupliqué. Les rôles d'organisation (Animatrice principale, Grammarian, Timekeeper & Posture Visualizer, Évaluateurs, Responsable Feedback, Responsable Logistique & Digital, Responsable Communication, Photographe / Documentation) sont stockés dans une seule colonne `roles` au format JSON (`{ "animatrice": ["Nom"], "evaluateurs": ["Nom 1","Nom 2"], ... }`), plutôt que dans une table relationnelle séparée, pour rester cohérent avec le reste de l'application (une ligne = un enregistrement complet). Les présentateurs et mentors ne sont ni dupliqués ni ré-affichés sur les pages Sessions : ils restent uniquement rattachés aux propositions.
+
+**À propos de la table `affiches`** et du bucket de stockage : le fichier lui-même (PNG, JPG ou PDF, 8 Mo max, contrôlé côté client dans `index.html` par `AFFICHE_MAX_BYTES`) est envoyé dans le bucket Supabase Storage `affiches` ; la table ne garde que le titre, l'URL publique du fichier (`file_url`), son chemin dans le bucket (`file_path`, utilisé pour le supprimer ou le remplacer) et le type MIME. L'association à une session est optionnelle (`session_id` nullable, `on delete set null` : si une session est supprimée, ses affiches ne sont pas perdues, seulement détachées) ; une affiche peut donc être générale ou liée à une session existante. Remplacer le fichier d'une affiche supprime l'ancien fichier du bucket après confirmation de l'envoi du nouveau ; supprimer une affiche supprime aussi son fichier du bucket.
 
 **Note sur le modèle de confiance** : ces règles RLS sont volontairement ouvertes (comme demandé : aucun compte requis pour soumettre une proposition), donc la protection réelle repose sur le fait que l'URL du projet et la clé publique restent connues seulement des personnes ayant le lien de l'application — exactement le même niveau de protection que le code d'accès du Dashboard (`ADMIN_CODE`). Ce n'est pas un mécanisme de sécurité de niveau entreprise ; pour des données sensibles, il faudrait ajouter une vraie authentification Supabase (hors périmètre de cette version).
 
 ### Rafraîchissement des données
 
-L'application interroge Supabase à l'ouverture, puis toutes les 15 secondes (`SUPABASE_POLL_MS`), et immédiatement après chaque ajout/modification/suppression — pas de mise à jour instantanée seconde par seconde entre deux personnes connectées en même temps, mais un délai maximal de 15 secondes pour voir apparaître les nouvelles propositions des autres.
+L'application interroge Supabase à l'ouverture, puis toutes les 15 secondes (`SUPABASE_POLL_MS`), et immédiatement après chaque ajout/modification/suppression — pas de mise à jour instantanée seconde par seconde entre deux personnes connectées en même temps, mais un délai maximal de 15 secondes pour voir apparaître les nouvelles propositions ou les nouvelles sessions des autres. Comme pour le formulaire de proposition, ce rafraîchissement périodique ne réécrit jamais un champ en cours de saisie (ex. le formulaire d'ajout d'une personne à un rôle).
 
 ### Historique : ancienne version "Claude Artifact"
 
 Une version antérieure de cette application était conçue pour tourner comme **Claude Artifact** (stockage via les capacités `db`/`downloads`/`user` de Claude). Cette approche a été abandonnée pour l'usage réel : elle exige que chaque personne soit connectée à Claude et membre de la même organisation, ce qui exclut les collaborateurs sans compte Claude. La version Supabase de ce dépôt n'a plus cette limite.
+
+Cette ancienne version reste tenue à jour en parallèle (même fonctionnalités), mais avec une limite propre aux Affiches : n'ayant pas accès à un stockage de fichiers dédié (contrairement à Supabase Storage côté `index.html`), le fichier de l'affiche y est encodé et stocké directement dans le document (base64), ce qui plafonne la taille acceptée à 700 Ko au lieu de 8 Mo. Pour des affiches plus lourdes, utiliser la version en ligne.
 
 ## Installation locale
 
@@ -114,12 +167,17 @@ camusat-talk-sn/
 
 Le Dashboard est protégé par un code d'accès défini dans `index.html` (constante `ADMIN_CODE`, valeur par défaut : `CAMUSAT2026`). Ce n'est **pas** un mécanisme de sécurité réel — comme tout code présent dans une page web, il est visible par quiconque consulte le source. Change cette valeur avant toute diffusion large de l'application.
 
+Ce même code d'accès (le même déverrouillage que le Dashboard) protège la **création, la modification et la suppression d'une session** sur la page Sessions. En revanche, **l'ajout et le retrait d'une personne à un rôle sont ouverts à tout le monde**, sans code d'accès : n'importe qui peut consulter une session et modifier qui est affecté à chaque rôle (utile en pratique pour que les organisateurs d'une session ajustent eux-mêmes les rôles sans devoir être administrateur).
+
+Ce même code protège aussi l'onglet **Affiches** du Dashboard (ajout, remplacement, suppression, association à une session) : seul l'administrateur peut gérer les affiches. La galerie publique (page d'accueil → « Nos affiches », et l'affiche affichée automatiquement dans les détails d'une session) reste, elle, consultable par tout le monde sans code d'accès.
+
 ## Limites connues / pistes d'évolution
 
 - Pas de suite de tests automatisés.
 - Pas de vraie authentification par utilisateur (l'identité du présentateur est simplement saisie dans le formulaire, et n'importe qui connaissant le code peut accéder au Dashboard).
 - Les règles Supabase (RLS) sont ouvertes en lecture/écriture : suffisant pour un outil interne diffusé par lien, mais pas pour des données sensibles.
 - Rafraîchissement par sondage toutes les 15 secondes plutôt que du temps réel instantané (réalisable via les canaux *Realtime* de Supabase si besoin, non activés ici).
+- Affiches limitées à 8 Mo par fichier (PNG, JPG, PDF) côté Supabase, et à 700 Ko sur l'ancienne version Claude Artifact (stockage en base64 dans le document, sans bucket dédié).
 - Pour une évolution plus poussée (comptes individuels, journal d'audit, notifications par e-mail...), Supabase propose l'authentification et les *Edge Functions* nécessaires ; ou une reconstruction en React/Next.js reste possible en gardant la même base Supabase.
 
 ## Captures d'écran
