@@ -90,10 +90,44 @@
   .navlink.active{background:var(--navy);color:#fff}
   .nav-toggle{display:none;background:none;border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer}
   @media (max-width:780px){
-    .navlinks{position:fixed;inset:0 0 auto 0;top:calc(56px + env(safe-area-inset-top,0px));background:var(--surface);border-bottom:1px solid var(--border);flex-direction:column;align-items:stretch;padding:10px 16px 16px;gap:6px;display:none;box-shadow:var(--shadow-md)}
-    .navlinks.open{display:flex}
-    .navlink{width:100%;text-align:left}
-    .nav-toggle{display:inline-flex}
+    .navlinks{display:none !important}
+    .nav-inner{justify-content:flex-start}
+    .nav-toggle{display:inline-flex;width:44px;height:44px;border-radius:12px;align-items:center;justify-content:center;margin-right:2px}
+    .nav-toggle svg{width:20px;height:20px}
+  }
+
+  /* ---------- Mobile nav drawer (mobile only, isolated from desktop nav) ---------- */
+  body.mobile-drawer-open{overflow:hidden}
+  .mobile-nav-overlay{position:fixed;inset:0;z-index:155;background:rgba(15,21,36,.55);opacity:0;pointer-events:none;transition:opacity .22s ease}
+  .mobile-nav-overlay.open{opacity:1;pointer-events:auto}
+  .mobile-nav-panel{position:fixed;top:0;bottom:0;left:0;z-index:156;width:82%;max-width:340px;background:var(--surface);box-shadow:var(--shadow-lg);transform:translateX(-100%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow-y:auto}
+  .mobile-nav-panel.open{transform:translateX(0)}
+  .mnp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 18px;padding-top:calc(20px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--border);flex-shrink:0}
+  .mnp-brand{display:flex;align-items:center;gap:10px}
+  .mnp-brand svg{display:block;flex-shrink:0}
+  .mnp-brand-word{font-family:'Sora',sans-serif;font-weight:800;font-size:16px;line-height:1;letter-spacing:-.01em;white-space:nowrap}
+  .mnp-brand-word b{color:var(--navy)}
+  .mnp-brand-word span{color:var(--red)}
+  .mnp-close{background:var(--navy-tint);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--navy);flex-shrink:0;transition:background .15s}
+  .mnp-close:hover{background:var(--red-tint);color:var(--red)}
+  .mnp-list{display:flex;flex-direction:column;gap:6px;padding:14px}
+  .mnp-item{display:flex;align-items:center;gap:14px;padding:14px 14px;border-radius:16px;cursor:pointer;transition:background .15s,transform .12s;position:relative}
+  .mnp-item:active{transform:scale(.98)}
+  .mnp-icon{width:42px;height:42px;border-radius:13px;background:var(--navy-tint);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .mnp-label{font-size:15.5px;font-weight:700;color:var(--text)}
+  .mnp-item:hover{background:var(--navy-tint)}
+  .mnp-item.active{background:var(--navy)}
+  .mnp-item.active .mnp-label{color:#fff}
+  .mnp-item.active .mnp-icon{background:rgba(255,255,255,.18)}
+  .mnp-item.active::before{content:"";position:absolute;left:-14px;top:10px;bottom:10px;width:4px;border-radius:4px;background:var(--red)}
+  .mnp-item.mnp-featured{background:var(--red-tint);border:1.5px solid var(--red-tint)}
+  .mnp-item.mnp-featured .mnp-icon{background:var(--red);color:#fff}
+  .mnp-item.mnp-featured:hover{background:#fbdadf}
+  .mnp-item.mnp-featured.active{background:var(--navy);border-color:var(--navy)}
+  .mnp-item.mnp-featured.active .mnp-icon{background:rgba(255,255,255,.22);color:#fff}
+  .mnp-foot{margin-top:auto;padding:16px 22px;font-size:12px;color:var(--text-soft);border-top:1px solid var(--border)}
+  @media (min-width:781px){
+    .mobile-nav-overlay,.mobile-nav-panel{display:none !important}
   }
 
   /* ---------- Buttons ---------- */
@@ -384,6 +418,35 @@
     </div>
   </div>
 </nav>
+
+<div class="mobile-nav-overlay" id="mobileNavOverlay" hidden></div>
+<div class="mobile-nav-panel" id="mobileNavPanel" role="dialog" aria-label="Menu de navigation" hidden>
+  <div class="mnp-head">
+    <div class="mnp-brand">
+      <svg width="30" height="30" viewBox="0 0 34 34" fill="none">
+        <rect width="34" height="34" rx="10" fill="#203261"/>
+        <path d="M8 12.5C8 10.567 9.567 9 11.5 9H22.5C24.433 9 26 10.567 26 12.5V17.5C26 19.433 24.433 21 22.5 21H15L10.5 24.5V21H11.5C9.567 21 8 19.433 8 17.5V12.5Z" fill="white"/>
+        <circle cx="13" cy="15" r="1.4" fill="#203261"/>
+        <circle cx="17" cy="15" r="1.4" fill="#c8102e"/>
+        <circle cx="21" cy="15" r="1.4" fill="#203261"/>
+      </svg>
+      <span class="mnp-brand-word"><b>CAMUSAT</b> <span>TALK</span></span>
+    </div>
+    <button class="mnp-close" id="mobileNavClose" aria-label="Fermer le menu">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="mnp-list">
+    <div class="mnp-item" data-nav="#/" data-mnp="accueil"><span class="mnp-icon">🏠</span><span class="mnp-label">Accueil</span></div>
+    <div class="mnp-item mnp-featured" data-nav="#/proposer" data-mnp="proposer"><span class="mnp-icon">💡</span><span class="mnp-label">Proposer un sujet</span></div>
+    <div class="mnp-item" data-nav="#/presentateurs" data-mnp="presentateurs"><span class="mnp-icon">👥</span><span class="mnp-label">Présentateurs</span></div>
+    <div class="mnp-item" data-nav="#/sessions" data-mnp="sessions"><span class="mnp-icon">📅</span><span class="mnp-label">Sessions</span></div>
+    <div class="mnp-item" data-nav="#/affiches" data-mnp="affiches"><span class="mnp-icon">🖼️</span><span class="mnp-label">Affiches</span></div>
+    <div class="mnp-item" data-nav="#/media" data-mnp="media"><span class="mnp-icon">🎬</span><span class="mnp-label">Média</span></div>
+    <div class="mnp-item" data-nav="#/dashboard" data-mnp="dashboard"><span class="mnp-icon">⚙️</span><span class="mnp-label">Dashboard</span></div>
+  </div>
+  <div class="mnp-foot">CAMUSAT TALK · Share. Learn. Inspire.</div>
+</div>
 
 <main id="view"></main>
 
@@ -1194,13 +1257,46 @@
     document.querySelectorAll(".navlink").forEach(function(el){
       el.classList.toggle("active", el.getAttribute("data-nav")===map[route]);
     });
-    document.getElementById("navLinks").classList.remove("open");
+    document.querySelectorAll(".mnp-item").forEach(function(el){
+      el.classList.toggle("active", el.getAttribute("data-nav")===map[route]);
+    });
+  }
+
+  // ---------- Menu mobile (tiroir latéral, mobile uniquement) ----------
+  function openMobileDrawer(){
+    var overlay = document.getElementById("mobileNavOverlay");
+    var panel = document.getElementById("mobileNavPanel");
+    if(!overlay || !panel) return;
+    overlay.hidden = false;
+    panel.hidden = false;
+    // Force reflow avant d'ajouter la classe "open" pour garantir l'animation.
+    void panel.offsetWidth;
+    overlay.classList.add("open");
+    panel.classList.add("open");
+    document.body.classList.add("mobile-drawer-open");
+  }
+  function closeMobileDrawer(){
+    var overlay = document.getElementById("mobileNavOverlay");
+    var panel = document.getElementById("mobileNavPanel");
+    if(!overlay || !panel) return;
+    overlay.classList.remove("open");
+    panel.classList.remove("open");
+    document.body.classList.remove("mobile-drawer-open");
+    setTimeout(function(){
+      if(!panel.classList.contains("open")){ overlay.hidden = true; panel.hidden = true; }
+    }, 260);
+  }
+  function isMobileDrawerOpen(){
+    var panel = document.getElementById("mobileNavPanel");
+    return !!(panel && panel.classList.contains("open"));
   }
 
   window.addEventListener("hashchange", render);
   document.addEventListener("click", function(e){
+    var mnpItem = e.target.closest(".mnp-item");
     var t = e.target.closest("[data-nav]");
     if(t){ navTo(t.getAttribute("data-nav")); }
+    if(mnpItem){ closeMobileDrawer(); }
     var d = e.target.closest("[data-detail]");
     if(d){ openDetailModal(d.getAttribute("data-detail")); }
     var p = e.target.closest("[data-poster]");
@@ -1212,13 +1308,16 @@
     if(e.target.id==="detailModal" || e.target.closest("[data-modal-close]")){ closeDetailModal(); }
     // Ferme l'affiche/média en grand format (fond sombre ou bouton de fermeture).
     if(e.target.id==="lightboxOverlay" || e.target.closest("[data-lightbox-close]")){ closePosterLightbox(); }
+    // Menu mobile : fermeture via le bouton X ou un clic sur l'overlay sombre.
+    if(e.target.id==="mobileNavOverlay" || e.target.closest("#mobileNavClose")){ closeMobileDrawer(); }
   });
   document.addEventListener("keydown", function(e){
     if(e.key==="Escape"){
       var lightbox = document.getElementById("lightboxOverlay");
       if(lightbox && !lightbox.hidden){ closePosterLightbox(); return; }
       var modal = document.getElementById("detailModal");
-      if(modal && !modal.hidden) closeDetailModal();
+      if(modal && !modal.hidden){ closeDetailModal(); return; }
+      if(isMobileDrawerOpen()){ closeMobileDrawer(); }
       return;
     }
     if(e.key==="Enter" || e.key===" "){
@@ -1427,7 +1526,7 @@
   }
 
   document.getElementById("navToggle").addEventListener("click", function(){
-    document.getElementById("navLinks").classList.toggle("open");
+    openMobileDrawer();
   });
 
   /* ============================= RENDER: ROOT ============================= */
@@ -1506,8 +1605,8 @@
     '<section class="wrap">'+
       '<div class="section-head">'+
         '<span class="kicker">Comment ça marche</span>'+
-        '<h2>Une plateforme simple, pensée pour les équipes terrain</h2>'+
-        '<p>Renseignez votre intervention en moins de deux minutes : votre équipe RH et la Direction suivent ensuite chaque proposition jusqu\'à la présentation.</p>'+
+        '<h2>Prenez la parole. Partagez. Inspirez.</h2>'+
+        '<p>CAMUSAT TALK est un espace où les collaborateurs peuvent proposer des sujets, développer leurs compétences et partager leurs expériences avec leurs collègues.</p>'+
       '</div>'+
       '<div class="cards-3">'+
         '<div class="info-card"><div class="ic-icon">'+ICONS.layers+'</div><h3>1. Proposez votre sujet</h3><p>Titre, thématique, objectif et mentor accompagnateur : un formulaire court et guidé.</p></div>'+
