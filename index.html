@@ -307,6 +307,35 @@
   .dash-tab{font-size:13.5px;font-weight:700;padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text-muted)}
   .dash-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
 
+  /* ---------- Médias (photos + vidéos YouTube) ---------- */
+  .media-filters{display:flex;gap:8px;margin-bottom:26px;flex-wrap:wrap}
+  .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+  .media-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s,transform .15s;display:flex;flex-direction:column}
+  .media-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+  .media-card:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+  .media-thumb{position:relative;aspect-ratio:16/10;background:var(--navy-tint);overflow:hidden}
+  .media-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .media-type-badge{position:absolute;top:10px;left:10px;font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:rgba(15,21,36,.68);color:#fff;backdrop-filter:blur(2px)}
+  .media-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,21,36,.22);transition:background .15s}
+  .media-card:hover .media-play{background:rgba(15,21,36,.36)}
+  .media-play span{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.92);color:var(--navy);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md)}
+  .media-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
+  .media-body h4{font-size:14.5px;margin:0;line-height:1.35}
+  .media-body .media-date{font-size:12px;color:var(--text-soft)}
+  .media-body .media-desc{font-size:12.5px;color:var(--text-muted);margin:2px 0 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .media-row-thumb{width:56px;height:40px;border-radius:6px;overflow:hidden;background:var(--navy-tint);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--navy);position:relative}
+  .media-row-thumb img{width:100%;height:100%;object-fit:cover}
+  .media-row-thumb .rt-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,21,36,.32);color:#fff}
+  .stat-row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+  @media (max-width:640px){.stat-row-3{grid-template-columns:1fr}}
+  .lightbox-card iframe{width:min(860px,88vw);height:min(484px,49.5vw);border:none;border-radius:12px;box-shadow:var(--shadow-lg);background:#000}
+  .lightbox-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .pill-masque{background:var(--navy-tint);color:var(--text-soft);border-color:var(--border)}
+  .media-preview-box{display:flex;gap:12px;align-items:center;background:var(--navy-tint);border-radius:var(--radius-sm);padding:12px;margin-top:4px}
+  .media-preview-box img{width:96px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0;background:#dfe4ee}
+  .media-preview-box .mp-text{font-size:12.5px;color:var(--text-muted)}
+  .media-photo-preview{width:100%;max-height:220px;object-fit:contain;border-radius:var(--radius-sm);background:var(--navy-tint);margin-top:4px;display:block}
+
   /* ---------- Gate (admin passcode) ---------- */
   .gate-wrap{max-width:420px;margin:60px auto;background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-md);padding:36px;text-align:center}
   .gate-wrap .gicon{width:52px;height:52px;border-radius:14px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
@@ -349,6 +378,8 @@
       <div class="navlink" data-nav="#/proposer">Proposer un sujet</div>
       <div class="navlink" data-nav="#/presentateurs">Présentateurs</div>
       <div class="navlink" data-nav="#/sessions">Sessions</div>
+      <div class="navlink" data-nav="#/affiches">Affiches</div>
+      <div class="navlink" data-nav="#/media">Média</div>
       <div class="navlink" data-nav="#/dashboard">Dashboard</div>
     </div>
   </div>
@@ -463,7 +494,11 @@
     link:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 15l6-6" stroke-linecap="round"/><path d="M13 5.5l1-1a3.5 3.5 0 015 5l-1 1M11 18.5l-1 1a3.5 3.5 0 01-5-5l1-1" stroke-linecap="round"/></svg>',
     plus:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>',
     image:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 16l-5.5-5.5a1.5 1.5 0 00-2.1 0L3 20" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    file:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h9l5 5v13a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z" stroke-linejoin="round"/><path d="M14 3v6h6" stroke-linejoin="round"/></svg>'
+    file:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h9l5 5v13a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z" stroke-linejoin="round"/><path d="M14 3v6h6" stroke-linejoin="round"/></svg>',
+    play:'<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+    eye:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>',
+    eyeOff:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18M10.6 10.6a3 3 0 004.24 4.24M9.9 5.1A11 11 0 0123 12s-1.6 2.8-4.3 4.7M6.3 6.3C3.7 8 2 12 2 12s1.9 3.3 5 5.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    camera:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-2h6l2 2h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" stroke-linejoin="round"/><circle cx="12" cy="14" r="3.5"/></svg>'
   };
 
   /* ============================= STATE ============================= */
@@ -472,15 +507,18 @@
     items: [],
     sessions: [],
     affiches: [],
+    medias: [],
     adminUnlocked: false,
     filters: { theme: "", status: "", q: "" },
     lastSubmitted: null,
     confirmDeletes: {}, /* id -> timestamp until which the delete button stays armed, survives re-renders */
     confirmDeleteSessions: {},
     confirmDeleteAffiches: {},
+    confirmDeleteMedias: {},
     roleAddOpen: null, /* id of the role currently showing its inline "add person" form, on the session detail page */
     roleAddDraft: "", /* texte en cours de saisie dans ce formulaire : conservé dans `state` (et non dans le seul DOM) pour survivre à un re-rendu déclenché par un rafraîchissement en arrière-plan pendant que l'utilisateur tape */
-    dashTab: "propositions" /* onglet actif dans le Dashboard : "propositions" ou "affiches" */
+    dashTab: "propositions", /* onglet actif dans le Dashboard : "propositions", "affiches" ou "medias" */
+    mediaFilter: "tout" /* filtre actif sur la page publique Média : "tout", "photo" ou "video" */
   };
 
   /* Stockage : Supabase (base de données partagée, accessible sans compte
@@ -582,6 +620,54 @@
     return uid() + "." + ext;
   }
 
+  /* Médias CAMUSAT TALK (photos + vidéos YouTube) : table Supabase séparée,
+     sans lien avec les présentateurs/mentors. Les photos sont stockées dans
+     le bucket Supabase Storage "medias" (même principe que le bucket
+     "affiches") ; la table ne garde que les métadonnées et l'URL publique.
+     Les vidéos ne stockent qu'un lien YouTube + l'identifiant extrait :
+     aucun fichier vidéo n'est jamais envoyé nulle part, la miniature est
+     calculée directement depuis l'identifiant (img.youtube.com). */
+  var LOCAL_MEDIAS_FALLBACK = [];
+  var MEDIA_FIELD_MAP = {
+    type:"type", title:"title", description:"description", mediaDate:"media_date", status:"status",
+    imageUrl:"image_url", imagePath:"image_path",
+    youtubeUrl:"youtube_url", youtubeId:"youtube_id", thumbnailUrl:"thumbnail_url"
+  };
+  function toMediaDbRow(v){
+    var out = {};
+    Object.keys(MEDIA_FIELD_MAP).forEach(function(k){ if(v[k]!==undefined) out[MEDIA_FIELD_MAP[k]] = v[k]; });
+    return out;
+  }
+  function fromMediaDbRow(r){
+    var out = { id:r.id, createdAt:r.created_at };
+    Object.keys(MEDIA_FIELD_MAP).forEach(function(k){ out[k] = r[MEDIA_FIELD_MAP[k]]; });
+    return out;
+  }
+  var MEDIA_ACCEPTED_TYPES = ["image/png","image/jpeg","image/webp"];
+  var MEDIA_ACCEPTED_EXT = ["png","jpg","jpeg","webp"];
+  var MEDIA_MAX_BYTES = 8 * 1024 * 1024; // 8 Mo (même limite que les affiches, grâce au bucket Supabase Storage)
+  function mediaFileValid(file){
+    if(!file) return false;
+    var ext = (file.name.split(".").pop()||"").toLowerCase();
+    var extOk = MEDIA_ACCEPTED_EXT.indexOf(ext) > -1;
+    var typeOk = !file.type || MEDIA_ACCEPTED_TYPES.indexOf(file.type) > -1;
+    return extOk && typeOk && file.size <= MEDIA_MAX_BYTES;
+  }
+  function mediaStoragePath(file){
+    var ext = (file.name.split(".").pop()||"bin").toLowerCase();
+    return uid() + "." + ext;
+  }
+  // Accepte watch?v=ID, youtu.be/ID, shorts/ID et embed/ID, avec ou sans
+  // paramètres supplémentaires (&t=..., ?si=...).
+  function extractYoutubeId(url){
+    if(!url) return null;
+    var m = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/.exec(url.trim());
+    return m ? m[1] : null;
+  }
+  function youtubeThumbnail(id){
+    return "https://img.youtube.com/vi/"+id+"/hqdefault.jpg";
+  }
+
   var sb = null;
 
   /* ============================= TOASTS ============================= */
@@ -609,13 +695,15 @@
         fetchAll();
         fetchAllSessions();
         fetchAllAffiches();
-        setInterval(function(){ fetchAll(); fetchAllSessions(); fetchAllAffiches(); }, SUPABASE_POLL_MS);
+        fetchAllMedias();
+        setInterval(function(){ fetchAll(); fetchAllSessions(); fetchAllAffiches(); fetchAllMedias(); }, SUPABASE_POLL_MS);
         return;
       }
     }catch(e){ console.warn("Supabase init failed", e); }
     state.items = LOCAL_FALLBACK;
     state.sessions = LOCAL_SESSIONS_FALLBACK;
     state.affiches = LOCAL_AFFICHES_FALLBACK;
+    state.medias = LOCAL_MEDIAS_FALLBACK;
     render();
   }
 
@@ -922,6 +1010,167 @@
     return !!exp && exp > Date.now();
   }
 
+  /* ============================= DB LAYER (Médias) ============================= */
+  function mediasSorted(){
+    var arr = state.medias.slice();
+    arr.sort(function(a,b){ return (b.createdAt||"").localeCompare(a.createdAt||""); });
+    return arr;
+  }
+  function mediaById(id){
+    return state.medias.find(function(m){ return String(m.id)===String(id); });
+  }
+  function publishedMedias(){
+    return mediasSorted().filter(function(m){ return m.status==="publie"; });
+  }
+  function mediasFiltered(filter){
+    var list = publishedMedias();
+    if(filter==="photo" || filter==="video") return list.filter(function(m){ return m.type===filter; });
+    return list;
+  }
+
+  function fetchAllMedias(){
+    if(!sb) return;
+    sb.from("medias").select("*").order("created_at", {ascending:false}).then(function(res){
+      if(res.error){ console.warn("Supabase select error (medias)", res.error); return; }
+      state.medias = (res.data||[]).map(fromMediaDbRow);
+      if(currentRoute()==="proposer" || isEditingSomething()) return;
+      render();
+    });
+  }
+
+  function uploadMediaFile(file, cb){
+    if(!sb){ cb(false, {message:"Stockage indisponible."}); return; }
+    var path = mediaStoragePath(file);
+    sb.storage.from("medias").upload(path, file, {cacheControl:"3600", upsert:false}).then(function(res){
+      if(res.error){ cb(false, res.error); return; }
+      var pub = sb.storage.from("medias").getPublicUrl(path);
+      cb(true, null, {imagePath:path, imageUrl:(pub.data||{}).publicUrl||""});
+    });
+  }
+
+  function removeMediaFile(path, cb){
+    if(!sb || !path){ if(cb) cb(true); return; }
+    sb.storage.from("medias").remove([path]).then(function(res){
+      if(cb) cb(!res.error, res.error);
+    });
+  }
+
+  function createMediaPhoto(file, meta, cb){
+    if(!mediaFileValid(file)){
+      cb(false, {message:"Format non pris en charge ou fichier trop volumineux (8 Mo max). Formats acceptés : PNG, JPG, WEBP."});
+      return;
+    }
+    if(sb){
+      uploadMediaFile(file, function(success, err, up){
+        if(!success){ cb(false, err); return; }
+        var row = toMediaDbRow({ type:"photo", title: meta.title, description: meta.description||"", mediaDate: meta.mediaDate||null, status: meta.status, imageUrl: up.imageUrl, imagePath: up.imagePath });
+        row.created_at = new Date().toISOString();
+        sb.from("medias").insert([row]).then(function(res){
+          if(res.error){ removeMediaFile(up.imagePath, function(){}); cb(false, res.error); return; }
+          fetchAllMedias();
+          cb(true);
+        });
+      });
+    } else {
+      var reader = new FileReader();
+      reader.onload = function(){
+        var it = { id: uid(), type:"photo", title: meta.title, description: meta.description||"", mediaDate: meta.mediaDate||null, status: meta.status, imageUrl: reader.result, imagePath:"", createdAt: new Date().toISOString() };
+        LOCAL_MEDIAS_FALLBACK.unshift(it);
+        state.medias = LOCAL_MEDIAS_FALLBACK;
+        cb(true);
+      };
+      reader.onerror = function(){ cb(false, {message:"Lecture du fichier impossible."}); };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function createMediaVideo(meta, cb){
+    var row = { type:"video", title: meta.title, description: meta.description||"", mediaDate: meta.mediaDate||null, status: meta.status, youtubeUrl: meta.youtubeUrl, youtubeId: meta.youtubeId, thumbnailUrl: meta.thumbnailUrl };
+    if(sb){
+      var dbRow = toMediaDbRow(row);
+      dbRow.created_at = new Date().toISOString();
+      sb.from("medias").insert([dbRow]).then(function(res){
+        if(res.error){ cb(false, res.error); return; }
+        fetchAllMedias();
+        cb(true);
+      });
+    } else {
+      row.id = uid();
+      row.createdAt = new Date().toISOString();
+      LOCAL_MEDIAS_FALLBACK.unshift(row);
+      state.medias = LOCAL_MEDIAS_FALLBACK;
+      cb(true);
+    }
+  }
+
+  function updateMedia(id, patch, cb){
+    if(sb){
+      sb.from("medias").update(toMediaDbRow(patch)).eq("id", id).then(function(res){
+        if(res.error){
+          toast("Modification impossible", res.error.message || "Réessayez dans un instant.", true);
+          if(cb) cb(false, res.error);
+          return;
+        }
+        fetchAllMedias();
+        if(cb) cb(true);
+      });
+    } else {
+      var it = LOCAL_MEDIAS_FALLBACK.find(function(x){ return x.id===id; });
+      if(it){ Object.assign(it, patch); state.medias = LOCAL_MEDIAS_FALLBACK; render(); }
+      if(cb) cb(true);
+    }
+  }
+
+  function replaceMediaFile(id, file, cb){
+    if(!mediaFileValid(file)){
+      cb(false, {message:"Format non pris en charge ou fichier trop volumineux (8 Mo max)."});
+      return;
+    }
+    var it = mediaById(id);
+    if(sb){
+      uploadMediaFile(file, function(success, err, up){
+        if(!success){ cb(false, err); return; }
+        sb.from("medias").update({image_url:up.imageUrl, image_path:up.imagePath}).eq("id", id).then(function(res){
+          if(res.error){ removeMediaFile(up.imagePath, function(){}); cb(false, res.error); return; }
+          if(it && it.imagePath) removeMediaFile(it.imagePath, function(){});
+          fetchAllMedias();
+          cb(true);
+        });
+      });
+    } else {
+      var reader = new FileReader();
+      reader.onload = function(){
+        if(it){ it.imageUrl = reader.result; state.medias = LOCAL_MEDIAS_FALLBACK; render(); }
+        cb(true);
+      };
+      reader.onerror = function(){ cb(false, {message:"Lecture du fichier impossible."}); };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function deleteMedia(id, cb){
+    var it = mediaById(id);
+    if(sb){
+      sb.from("medias").delete().eq("id", id).then(function(res){
+        if(res.error){ cb(false, res.error); return; }
+        if(it && it.imagePath) removeMediaFile(it.imagePath, function(){});
+        fetchAllMedias();
+        cb(true);
+      });
+    } else {
+      var idx = LOCAL_MEDIAS_FALLBACK.findIndex(function(x){ return x.id===id; });
+      if(idx>-1) LOCAL_MEDIAS_FALLBACK.splice(idx,1);
+      state.medias = LOCAL_MEDIAS_FALLBACK;
+      render();
+      cb(true);
+    }
+  }
+
+  function isMediaDeleteArmed(id){
+    var exp = state.confirmDeleteMedias[id];
+    return !!exp && exp > Date.now();
+  }
+
   /* ============================= ROUTER ============================= */
   function currentRoute(){
     var h = location.hash || "#/";
@@ -929,6 +1178,7 @@
     if(h.indexOf("#/presentateurs")===0) return "presentateurs";
     if(h.indexOf("#/sessions")===0) return "sessions";
     if(h.indexOf("#/affiches")===0) return "affiches";
+    if(h.indexOf("#/media")===0) return "media";
     if(h.indexOf("#/dashboard")===0) return "dashboard";
     return "accueil";
   }
@@ -940,7 +1190,7 @@
 
   function updateActiveNav(){
     var route = currentRoute();
-    var map = {accueil:"#/", proposer:"#/proposer", presentateurs:"#/presentateurs", sessions:"#/sessions", dashboard:"#/dashboard"};
+    var map = {accueil:"#/", proposer:"#/proposer", presentateurs:"#/presentateurs", sessions:"#/sessions", affiches:"#/affiches", media:"#/media", dashboard:"#/dashboard"};
     document.querySelectorAll(".navlink").forEach(function(el){
       el.classList.toggle("active", el.getAttribute("data-nav")===map[route]);
     });
@@ -955,10 +1205,12 @@
     if(d){ openDetailModal(d.getAttribute("data-detail")); }
     var p = e.target.closest("[data-poster]");
     if(p){ openPosterLightbox(p.getAttribute("data-poster")); }
+    var med = e.target.closest("[data-media]");
+    if(med){ openMediaLightbox(med.getAttribute("data-media")); }
     // Ferme la fenêtre de détail si on clique sur le fond sombre ou sur le
     // bouton de fermeture (mais pas sur son contenu, qui n'a pas cet attribut).
     if(e.target.id==="detailModal" || e.target.closest("[data-modal-close]")){ closeDetailModal(); }
-    // Ferme l'affiche en grand format (fond sombre ou bouton de fermeture).
+    // Ferme l'affiche/média en grand format (fond sombre ou bouton de fermeture).
     if(e.target.id==="lightboxOverlay" || e.target.closest("[data-lightbox-close]")){ closePosterLightbox(); }
   });
   document.addEventListener("keydown", function(e){
@@ -974,6 +1226,8 @@
       if(card){ e.preventDefault(); openDetailModal(card.getAttribute("data-detail")); return; }
       var poster = e.target.closest && e.target.closest("[data-poster]");
       if(poster){ e.preventDefault(); openPosterLightbox(poster.getAttribute("data-poster")); return; }
+      var med = e.target.closest && e.target.closest("[data-media]");
+      if(med){ e.preventDefault(); openMediaLightbox(med.getAttribute("data-media")); return; }
       var navBtn = e.target.closest && e.target.closest("[data-nav][role='button']");
       if(navBtn){ e.preventDefault(); navTo(navBtn.getAttribute("data-nav")); }
     }
@@ -1045,11 +1299,36 @@
   }
 
   function closePosterLightbox(){
+    // Partagée par les affiches ET les médias (photos/vidéos) : les deux
+    // réutilisent le même #lightboxOverlay, donc la même fermeture convient.
     var overlay = document.getElementById("lightboxOverlay");
     if(!overlay || overlay.hidden) return;
     overlay.hidden = true;
     overlay.innerHTML = "";
     document.body.classList.remove("modal-open");
+  }
+
+  /* ============================= MÉDIA EN GRAND FORMAT (lightbox) ============================= */
+  function openMediaLightbox(id){
+    var m = mediaById(id);
+    if(!m) return;
+    var overlay = document.getElementById("lightboxOverlay");
+    var body;
+    if(m.type==="video"){
+      body = '<iframe src="https://www.youtube.com/embed/'+esc(m.youtubeId)+'?autoplay=1" title="'+esc(m.title)+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'+
+        '<div class="lightbox-title">'+esc(m.title)+'</div>'+
+        '<div class="lightbox-actions"><a class="btn btn-secondary btn-sm" href="'+esc(m.youtubeUrl)+'" target="_blank" rel="noopener">'+ICONS.link+' Voir sur YouTube</a></div>';
+    } else {
+      body = '<img src="'+esc(m.imageUrl)+'" alt="'+esc(m.title)+'">'+
+        '<div class="lightbox-title">'+esc(m.title)+'</div>';
+    }
+    overlay.innerHTML =
+      '<button type="button" class="lightbox-close" data-lightbox-close aria-label="Fermer">'+ICONS.close+'</button>'+
+      '<div class="lightbox-card">'+body+'</div>';
+    overlay.hidden = false;
+    document.body.classList.add("modal-open");
+    var closeBtn = overlay.querySelector(".lightbox-close");
+    if(closeBtn) closeBtn.focus();
   }
 
   /* ============================= MODIFIER UNE PROPOSITION (Dashboard) ============================= */
@@ -1169,6 +1448,7 @@
     else if(route==="presentateurs") view.innerHTML = renderPresentateurs();
     else if(route==="sessions") view.innerHTML = renderSessions();
     else if(route==="affiches") view.innerHTML = renderAffichesGallery();
+    else if(route==="media") view.innerHTML = renderMediaGallery();
     else if(route==="dashboard") view.innerHTML = renderDashboard();
     var routeKey = route + (route==="sessions" ? ":"+(sessionIdFromHash()||"") : "");
     if(routeKey !== lastRenderedRouteKey){
@@ -1222,6 +1502,7 @@
         '<span class="arrow" aria-hidden="true" style="font-size:20px;font-weight:700">→</span>'+
       '</div>'+
     '</section>'+
+    renderHomeMediaSection()+
     '<section class="wrap">'+
       '<div class="section-head">'+
         '<span class="kicker">Comment ça marche</span>'+
@@ -1257,6 +1538,20 @@
     '</section>';
   }
 
+  // N'apparaît sur l'accueil que s'il existe au moins un média publié — pas
+  // de section vide tant qu'aucune photo/vidéo n'a été ajoutée.
+  function renderHomeMediaSection(){
+    var list = publishedMedias().slice(0,6);
+    if(!list.length) return "";
+    return '<section class="wrap" style="padding-top:0">'+
+      '<div class="section-head" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:26px">'+
+        '<div><span class="kicker">Galerie</span><h2 style="margin-bottom:0">Nos médias</h2><p style="margin:6px 0 0">Découvrez les moments forts de CAMUSAT TALK.</p></div>'+
+        '<button type="button" class="btn btn-outline-navy btn-sm" data-nav="#/media">Voir tous les médias →</button>'+
+      '</div>'+
+      '<div class="media-grid">'+list.map(renderMediaCard).join("")+'</div>'+
+    '</section>';
+  }
+
   /* ============================= AFFICHES (galerie publique) ============================= */
   function renderAffichesGallery(){
     var list = affichesSorted();
@@ -1284,6 +1579,52 @@
   function statusPill(id){
     var s = statusById(id);
     return '<span class="pill '+s.pill+'">'+esc(s.label)+'</span>';
+  }
+
+  /* ============================= MÉDIA (galerie publique) ============================= */
+  function renderMediaGallery(){
+    var list = mediasFiltered(state.mediaFilter);
+    var filters = [
+      {id:"tout", label:"Tout"},
+      {id:"photo", label:"Photos"},
+      {id:"video", label:"Vidéos"}
+    ];
+    return '<section class="wrap">'+
+      '<div class="section-head">'+
+        '<span class="kicker">Galerie</span>'+
+        '<h2>Nos médias</h2>'+
+        '<p>Découvrez les moments forts de CAMUSAT TALK : photos et vidéos des sessions.</p>'+
+      '</div>'+
+      '<div class="media-filters">'+filters.map(function(f){
+        return '<button type="button" class="dash-tab'+(state.mediaFilter===f.id?" active":"")+'" data-media-filter="'+f.id+'">'+f.label+'</button>';
+      }).join("")+'</div>'+
+      (list.length ? '<div class="media-grid">'+list.map(renderMediaCard).join("")+'</div>' : '<div class="empty-state">'+ICONS.empty+'<div>Aucun média disponible pour le moment.</div></div>')+
+    '</section>';
+  }
+
+  function renderMediaCard(m){
+    var thumb = m.type==="video" ? (m.thumbnailUrl || (m.youtubeId ? youtubeThumbnail(m.youtubeId) : "")) : m.imageUrl;
+    return '<div class="media-card" data-media="'+esc(m.id)+'" role="button" tabindex="0" aria-label="'+(m.type==="video"?"Voir la vidéo ":"Voir la photo ")+esc(m.title)+'">'+
+      '<div class="media-thumb">'+
+        '<img src="'+esc(thumb)+'" alt="'+esc(m.title)+'" loading="lazy">'+
+        '<span class="media-type-badge">'+(m.type==="video"?"Vidéo":"Photo")+'</span>'+
+        (m.type==="video" ? '<div class="media-play"><span>'+ICONS.play+'</span></div>' : '')+
+      '</div>'+
+      '<div class="media-body">'+
+        '<h4>'+esc(m.title)+'</h4>'+
+        (m.mediaDate ? '<span class="media-date">'+fmtDate(m.mediaDate)+'</span>' : '')+
+        (m.description ? '<p class="media-desc">'+esc(m.description)+'</p>' : '')+
+      '</div>'+
+    '</div>';
+  }
+
+  function bindMediaEvents(){
+    document.querySelectorAll("[data-media-filter]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        state.mediaFilter = btn.getAttribute("data-media-filter");
+        render();
+      });
+    });
   }
 
   /* ============================= PROPOSER (form) ============================= */
@@ -1851,12 +2192,16 @@
     }
 
     var tabsHtml = '<div class="dash-tabs">'+
-      '<button type="button" class="dash-tab'+(state.dashTab!=="affiches"?" active":"")+'" data-dash-tab="propositions">Propositions</button>'+
+      '<button type="button" class="dash-tab'+(state.dashTab!=="affiches" && state.dashTab!=="medias"?" active":"")+'" data-dash-tab="propositions">Propositions</button>'+
       '<button type="button" class="dash-tab'+(state.dashTab==="affiches"?" active":"")+'" data-dash-tab="affiches">Affiches</button>'+
+      '<button type="button" class="dash-tab'+(state.dashTab==="medias"?" active":"")+'" data-dash-tab="medias">Médias</button>'+
     '</div>';
 
     if(state.dashTab === "affiches"){
       return '<section class="wrap">'+tabsHtml+renderDashboardAffiches()+'</section>';
+    }
+    if(state.dashTab === "medias"){
+      return '<section class="wrap">'+tabsHtml+renderDashboardMedias()+'</section>';
     }
 
     var total = state.items.length;
@@ -2054,6 +2399,7 @@
     });
 
     if(state.dashTab === "affiches"){ bindDashboardAffichesEvents(); return; }
+    if(state.dashTab === "medias"){ bindDashboardMediasEvents(); return; }
 
     var dt = document.getElementById("dashThemeFilter");
     if(dt){
@@ -2104,6 +2450,270 @@
         btn.disabled = true;
         deleteAffiche(id, function(success, err){
           if(success){ toast("Affiche supprimée", ""); }
+          else{ btn.disabled = false; toast("Suppression impossible", (err && err.message) || "Réessayez.", true); }
+        });
+      });
+    });
+  }
+
+  /* ---------- Médias (Dashboard) ---------- */
+  function renderDashboardMedias(){
+    var list = mediasSorted();
+    var photos = list.filter(function(m){ return m.type==="photo"; }).length;
+    var videos = list.filter(function(m){ return m.type==="video"; }).length;
+    return '<div class="toolbar" style="margin-bottom:22px">'+
+        '<div class="section-head" style="margin:0">'+
+          '<span class="kicker">Communication</span>'+
+          '<h2 style="margin-bottom:0">📸 Gestion des médias</h2>'+
+        '</div>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap">'+
+          '<button class="btn btn-outline-navy btn-sm" id="btnNewMediaPhoto">'+ICONS.plus+' Ajouter une image</button>'+
+          '<button class="btn btn-primary btn-sm" id="btnNewMediaVideo">'+ICONS.plus+' Ajouter une vidéo</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="stat-row-3">'+
+        '<div class="stat-tile"><b>'+photos+'</b><span>Photos</span></div>'+
+        '<div class="stat-tile"><b>'+videos+'</b><span>Vidéos</span></div>'+
+        '<div class="stat-tile"><b>'+list.length+'</b><span>Total</span></div>'+
+      '</div>'+
+      '<div class="table-wrap">'+
+        '<table><thead><tr><th>Aperçu</th><th>Type</th><th>Titre</th><th>Date</th><th>Statut</th><th></th></tr></thead>'+
+        '<tbody id="mediaBody">'+renderMediaRows(list)+'</tbody></table>'+
+      '</div>';
+  }
+
+  function renderMediaRows(list){
+    if(!list.length){ return '<tr><td colspan="6" style="text-align:center;color:var(--text-soft);padding:40px 16px">Aucun média pour le moment.</td></tr>'; }
+    return list.map(function(m){
+      var thumb = m.type==="video" ? (m.thumbnailUrl || (m.youtubeId ? youtubeThumbnail(m.youtubeId) : "")) : m.imageUrl;
+      var isPublished = m.status==="publie";
+      return '<tr data-id="'+esc(m.id)+'">'+
+        '<td><div class="media-row-thumb"><img src="'+esc(thumb)+'" alt="">'+(m.type==="video" ? '<span class="rt-play">'+ICONS.play+'</span>' : '')+'</div></td>'+
+        '<td class="cell-sub">'+(m.type==="video"?"Vidéo":"Photo")+'</td>'+
+        '<td><span class="cell-name">'+esc(m.title)+'</span></td>'+
+        '<td class="cell-sub">'+(m.mediaDate ? fmtDate(m.mediaDate) : "—")+'</td>'+
+        '<td><span class="pill '+(isPublished?"pill-realisee":"pill-masque")+'">'+(isPublished?"Publié":"Masqué")+'</span></td>'+
+        '<td><div style="display:flex;gap:6px;justify-content:flex-end">'+
+          '<button type="button" class="icon-btn btn-toggle-media" data-id="'+esc(m.id)+'" title="'+(isPublished?"Masquer ce média":"Publier ce média")+'">'+(isPublished?ICONS.eyeOff:ICONS.eye)+'</button>'+
+          '<button type="button" class="icon-btn btn-edit-media" data-id="'+esc(m.id)+'" title="Modifier ce média">'+ICONS.edit+'</button>'+
+          '<button type="button" class="icon-btn btn-delete-media'+(isMediaDeleteArmed(m.id)?" confirm":"")+'" data-id="'+esc(m.id)+'" title="'+(isMediaDeleteArmed(m.id)?"Cliquer à nouveau pour confirmer la suppression":"Supprimer ce média")+'">'+ICONS.trash+'</button>'+
+        '</div></td>'+
+      '</tr>';
+    }).join("");
+  }
+
+  function mediaFormFieldsCommon(m){
+    return editField("mdTitle","Titre",m?m.title:"","text","full")+
+      '<div class="field full"><label for="mdDescription">Description (optionnelle)</label><textarea id="mdDescription">'+esc(m?m.description:"")+'</textarea></div>'+
+      editField("mdDate","Date (optionnelle)",m?m.mediaDate:todayLocalDateStr(),"date")+
+      '<div class="field"><label for="mdStatus">Statut</label><select id="mdStatus">'+
+        '<option value="publie"'+(!m || m.status==="publie" ? " selected":"")+'>Publié</option>'+
+        '<option value="masque"'+(m && m.status==="masque" ? " selected":"")+'>Masqué</option>'+
+      '</select></div>';
+  }
+
+  function openMediaPhotoFormModal(id){
+    var m = id ? mediaById(id) : null;
+    var modal = document.getElementById("detailModal");
+    modal.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true" aria-label="'+(m?"Modifier l'image":"Nouvelle image")+'" style="max-width:560px">'+
+        '<div class="modal-head">'+
+          '<div>'+
+            '<span class="theme-tag">'+ICONS.camera+' '+(m?"Modifier l'image":"Nouvelle image")+'</span>'+
+            '<h3 class="modal-title">'+(m?esc(m.title):"Ajouter une image")+'</h3>'+
+          '</div>'+
+          '<button type="button" class="modal-close" data-modal-close aria-label="Fermer">'+ICONS.close+'</button>'+
+        '</div>'+
+        '<div class="modal-body">'+
+          '<div class="form-grid" style="margin-top:6px">'+
+            '<div class="field full">'+
+              '<label for="mdFile">'+(m?"Remplacer l'image (optionnel)":"Image (PNG, JPG ou WEBP, 8 Mo max)")+'</label>'+
+              '<input type="file" id="mdFile" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp">'+
+              '<img id="mdPreview" class="media-photo-preview" hidden alt="Aperçu">'+
+            '</div>'+
+            mediaFormFieldsCommon(m)+
+          '</div>'+
+          '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px">'+
+            '<button type="button" class="btn btn-ghost" data-modal-close>Annuler</button>'+
+            '<button type="button" class="btn btn-primary" id="btnSaveMediaPhoto">'+(m?"Enregistrer les modifications":"Publier l'image")+'</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+    var first = document.getElementById("mdFile");
+    if(first) first.focus();
+
+    var preview = document.getElementById("mdPreview");
+    if(m && m.imageUrl){ preview.src = m.imageUrl; preview.hidden = false; }
+    document.getElementById("mdFile").addEventListener("change", function(){
+      var file = this.files[0];
+      if(!file){ return; }
+      var reader = new FileReader();
+      reader.onload = function(){ preview.src = reader.result; preview.hidden = false; };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById("btnSaveMediaPhoto").addEventListener("click", function(){
+      var title = document.getElementById("mdTitle").value.trim();
+      var description = document.getElementById("mdDescription").value.trim();
+      var mediaDate = document.getElementById("mdDate").value || null;
+      var status = document.getElementById("mdStatus").value;
+      var fileInput = document.getElementById("mdFile");
+      var file = fileInput.files[0] || null;
+
+      if(!title){ toast("Titre manquant", "Merci de donner un titre à l'image.", true); return; }
+      if(!m && !file){ toast("Image manquante", "Merci de sélectionner une image (PNG, JPG ou WEBP).", true); return; }
+
+      var btn = document.getElementById("btnSaveMediaPhoto");
+      btn.disabled = true; btn.textContent = "Enregistrement…";
+
+      function afterSave(success, err){
+        if(success){
+          toast(m ? "Média modifié" : "Image ajoutée avec succès.", title);
+          closeDetailModal();
+          if(!m) render();
+        } else {
+          btn.disabled = false; btn.textContent = m?"Enregistrer les modifications":"Publier l'image";
+          toast(m?"Modification impossible":"Ajout impossible", (err&&err.message)||"Réessayez.", true);
+        }
+      }
+
+      if(m){
+        updateMedia(m.id, {title:title, description:description, mediaDate:mediaDate, status:status}, function(success, err){
+          if(!success){ afterSave(false, err); return; }
+          if(file) replaceMediaFile(m.id, file, afterSave);
+          else afterSave(true);
+        });
+      } else {
+        createMediaPhoto(file, {title:title, description:description, mediaDate:mediaDate, status:status}, afterSave);
+      }
+    });
+  }
+
+  function openMediaVideoFormModal(id){
+    var m = id ? mediaById(id) : null;
+    var modal = document.getElementById("detailModal");
+    modal.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true" aria-label="'+(m?"Modifier la vidéo":"Nouvelle vidéo")+'" style="max-width:560px">'+
+        '<div class="modal-head">'+
+          '<div>'+
+            '<span class="theme-tag">'+ICONS.play+' '+(m?"Modifier la vidéo":"Nouvelle vidéo")+'</span>'+
+            '<h3 class="modal-title">'+(m?esc(m.title):"Ajouter une vidéo YouTube")+'</h3>'+
+          '</div>'+
+          '<button type="button" class="modal-close" data-modal-close aria-label="Fermer">'+ICONS.close+'</button>'+
+        '</div>'+
+        '<div class="modal-body">'+
+          '<div class="form-grid" style="margin-top:6px">'+
+            editField("mdVidUrl","Lien YouTube",m?m.youtubeUrl:"","url","full")+
+            '<div class="field full" id="mdVidPreviewWrap" hidden>'+
+              '<div class="media-preview-box"><img id="mdVidPreview" src="" alt="Miniature"><div class="mp-text">✓ Vidéo détectée — la miniature sera utilisée automatiquement.</div></div>'+
+            '</div>'+
+            mediaFormFieldsCommon(m)+
+          '</div>'+
+          '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px">'+
+            '<button type="button" class="btn btn-ghost" data-modal-close>Annuler</button>'+
+            '<button type="button" class="btn btn-primary" id="btnSaveMediaVideo">'+(m?"Enregistrer les modifications":"Publier la vidéo")+'</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+    var first = document.getElementById("mdVidUrl");
+    if(first) first.focus();
+
+    var wrap = document.getElementById("mdVidPreviewWrap");
+    var previewImg = document.getElementById("mdVidPreview");
+    function refreshPreview(){
+      var ytId = extractYoutubeId(first.value.trim());
+      if(ytId){ previewImg.src = youtubeThumbnail(ytId); wrap.hidden = false; }
+      else { wrap.hidden = true; }
+      return ytId;
+    }
+    if(m && m.youtubeUrl) refreshPreview();
+    first.addEventListener("input", refreshPreview);
+
+    document.getElementById("btnSaveMediaVideo").addEventListener("click", function(){
+      var youtubeUrl = document.getElementById("mdVidUrl").value.trim();
+      var ytId = extractYoutubeId(youtubeUrl);
+      var title = document.getElementById("mdTitle").value.trim();
+      var description = document.getElementById("mdDescription").value.trim();
+      var mediaDate = document.getElementById("mdDate").value || null;
+      var status = document.getElementById("mdStatus").value;
+
+      if(!ytId){ toast("Lien YouTube invalide", "Collez un lien YouTube valide (watch, youtu.be ou shorts).", true); return; }
+      if(!title){ toast("Titre manquant", "Merci de donner un titre à la vidéo.", true); return; }
+
+      var btn = document.getElementById("btnSaveMediaVideo");
+      btn.disabled = true; btn.textContent = "Enregistrement…";
+
+      var payload = {title:title, description:description, mediaDate:mediaDate, status:status, youtubeUrl:youtubeUrl, youtubeId:ytId, thumbnailUrl:youtubeThumbnail(ytId)};
+
+      function afterSave(success, err){
+        if(success){
+          toast(m ? "Média modifié" : "Vidéo ajoutée avec succès.", title);
+          closeDetailModal();
+          if(!m) render();
+        } else {
+          btn.disabled = false; btn.textContent = m?"Enregistrer les modifications":"Publier la vidéo";
+          toast(m?"Modification impossible":"Ajout impossible", (err&&err.message)||"Réessayez.", true);
+        }
+      }
+
+      if(m){ updateMedia(m.id, payload, afterSave); }
+      else { createMediaVideo(payload, afterSave); }
+    });
+  }
+
+  function bindDashboardMediasEvents(){
+    var photoBtn = document.getElementById("btnNewMediaPhoto");
+    if(photoBtn) photoBtn.addEventListener("click", function(){ openMediaPhotoFormModal(null); });
+    var videoBtn = document.getElementById("btnNewMediaVideo");
+    if(videoBtn) videoBtn.addEventListener("click", function(){ openMediaVideoFormModal(null); });
+    bindMediaRowEvents();
+  }
+
+  function bindMediaRowEvents(){
+    document.querySelectorAll(".btn-edit-media").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var m = mediaById(btn.getAttribute("data-id"));
+        if(!m) return;
+        if(m.type==="video") openMediaVideoFormModal(m.id);
+        else openMediaPhotoFormModal(m.id);
+      });
+    });
+    document.querySelectorAll(".btn-toggle-media").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.getAttribute("data-id");
+        var m = mediaById(id);
+        if(!m) return;
+        var newStatus = m.status==="publie" ? "masque" : "publie";
+        updateMedia(id, {status:newStatus}, function(success){
+          if(success) toast(newStatus==="publie" ? "Média publié" : "Média masqué", m.title);
+        });
+      });
+    });
+    document.querySelectorAll(".btn-delete-media").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.getAttribute("data-id");
+        if(!isMediaDeleteArmed(id)){
+          var armedAt = Date.now() + 4000;
+          state.confirmDeleteMedias[id] = armedAt;
+          btn.classList.add("confirm");
+          btn.title = "Cliquer à nouveau pour confirmer la suppression";
+          setTimeout(function(){
+            if(state.confirmDeleteMedias[id]===armedAt){
+              delete state.confirmDeleteMedias[id];
+              btn.classList.remove("confirm");
+              btn.title = "Supprimer ce média";
+            }
+          }, 4000);
+          return;
+        }
+        delete state.confirmDeleteMedias[id];
+        btn.disabled = true;
+        deleteMedia(id, function(success, err){
+          if(success){ toast("Média supprimé", ""); }
           else{ btn.disabled = false; toast("Suppression impossible", (err && err.message) || "Réessayez.", true); }
         });
       });
@@ -2233,6 +2843,7 @@
     if(route==="proposer") bindProposerForm();
     else if(route==="presentateurs") bindPresentateursEvents();
     else if(route==="sessions") bindSessionsEvents();
+    else if(route==="media") bindMediaEvents();
     else if(route==="dashboard") bindDashboardEvents();
   }
 
