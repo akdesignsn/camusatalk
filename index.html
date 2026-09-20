@@ -93,9 +93,14 @@
   .nav-toggle{display:none;background:none;border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer}
   @media (max-width:780px){
     .navlinks{display:none !important}
-    .nav-inner{justify-content:flex-start}
-    .nav-toggle{display:inline-flex;width:44px;height:44px;border-radius:12px;align-items:center;justify-content:center;margin-right:2px}
+    /* La marge de sécurité liée à l'encoche/île dynamique est absorbée une
+       seule fois par .nav-inner (padding-top) plutôt que par le décalage
+       sticky de .navbar, pour éviter un décalage visuel au moment du scroll. */
+    .navbar{top:0}
+    .nav-inner{justify-content:flex-start;padding-top:calc(12px + env(safe-area-inset-top,0px))}
+    .nav-toggle{display:inline-flex;order:-1;width:44px;height:44px;border-radius:12px;align-items:center;justify-content:center;margin-right:2px}
     .nav-toggle svg{width:20px;height:20px}
+    .brand{order:0}
   }
 
   /* ---------- Mobile nav drawer (mobile only, isolated from desktop nav) ---------- */
@@ -1292,6 +1297,16 @@
     var panel = document.getElementById("mobileNavPanel");
     return !!(panel && panel.classList.contains("open"));
   }
+  // Filet de sécurité : si Safari iOS restaure la page depuis son cache
+  // (retour arrière), s'assurer que le tiroir mobile et le blocage de
+  // scroll qui l'accompagne ne restent jamais bloqués dans un état ouvert.
+  window.addEventListener("pageshow", function(){
+    var overlay = document.getElementById("mobileNavOverlay");
+    var panel = document.getElementById("mobileNavPanel");
+    if(overlay){ overlay.classList.remove("open"); overlay.hidden = true; }
+    if(panel){ panel.classList.remove("open"); panel.hidden = true; }
+    document.body.classList.remove("mobile-drawer-open");
+  });
 
   window.addEventListener("hashchange", render);
   document.addEventListener("click", function(e){
