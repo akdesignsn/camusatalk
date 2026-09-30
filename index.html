@@ -3083,26 +3083,31 @@
       return renderFicheEditorPage(s, tpl, fiche, null);
     }
     // info.kind === "session-role" : on clique directement sur son rôle
-    // depuis « Mes missions » (plus de filtrage par nom en amont — voir
-    // renderMesMissions) ; le nom n'est demandé qu'ici, au moment de
-    // commencer à remplir, via une courte porte d'entrée — systématiquement
-    // à chaque nouvelle arrivée sur ce rôle (jamais pré-rempli avec un nom
-    // mémorisé), pour que la bonne personne tape bien le sien à chaque fois.
-    var ficheGateKey = info.sessionId+"::"+info.roleKey;
-    if(state.ficheGateConfirmedFor !== ficheGateKey){
-      return renderFicheNameGate(s, tpl);
-    }
-    var myName = state.myNameDraft!==null ? state.myNameDraft : "";
-    var trimmed = (myName||"").trim();
-    if(!trimmed){
-      return renderFicheNameGate(s, tpl);
-    }
+    // depuis « Mes missions ». On ne demande le nom QUE s'il faut vraiment
+    // démarrer une fiche vierge — jamais juste pour consulter ce qui existe
+    // déjà : pour un rôle à liste (Grammarian, Évaluateur, Posture
+    // Visualizer), on va donc directement au chooser, qui montre toutes les
+    // fiches déjà remplies ; la porte d'entrée n'apparaît qu'au clic sur
+    // "+ Nouvelle fiche" (voir plus haut, info.ficheId==="new"). Pour le
+    // Timekeeper (une seule fiche par session), s'il en existe déjà une, on
+    // l'ouvre directement ; sinon on demande le nom avant de la créer.
     if(FICHE_SCOPE[info.roleKey]==="session"){
-      var existing = singleFicheForRole(s.id, info.roleKey);
-      var draft = existing || {id:null, sessionId:s.id, roleKey:info.roleKey, participantName:trimmed, intervenantName:null, status:"a_remplir", formData:{}};
+      var existingTk = singleFicheForRole(s.id, info.roleKey);
+      if(existingTk){
+        return renderFicheEditorPage(s, tpl, existingTk, null);
+      }
+      var ficheGateKey = info.sessionId+"::"+info.roleKey;
+      if(state.ficheGateConfirmedFor !== ficheGateKey){
+        return renderFicheNameGate(s, tpl);
+      }
+      var trimmed = (state.myNameDraft!==null ? state.myNameDraft : "").trim();
+      if(!trimmed){
+        return renderFicheNameGate(s, tpl);
+      }
+      var draft = {id:null, sessionId:s.id, roleKey:info.roleKey, participantName:trimmed, intervenantName:null, status:"a_remplir", formData:{}};
       return renderFicheEditorPage(s, tpl, draft, null);
     }
-    return renderFicheChooser(s, info.roleKey, trimmed);
+    return renderFicheChooser(s, info.roleKey);
   }
 
   // Courte porte d'entrée : demande le nom de la personne qui remplit,
@@ -3125,18 +3130,20 @@
     '</section>';
   }
 
-  function renderFicheChooser(s, roleKey, myName){
+  function renderFicheChooser(s, roleKey){
     var tpl = FICHE_TEMPLATES[roleKey];
     // Toutes les fiches de ce rôle pour cette session, remplies par n'importe
-    // qui (voir fichesForRole) : la porte d'entrée n'attribue que la
-    // PROCHAINE fiche à créer, elle ne filtre pas ce qu'on peut voir ici.
+    // qui (voir fichesForRole) : on arrive ici directement au clic sur le
+    // rôle, sans porte d'entrée préalable — elle n'apparaît qu'au clic sur
+    // "+ Nouvelle fiche" (elle attribue alors seulement la PROCHAINE fiche à
+    // créer, jamais un filtre sur ce qu'on peut voir ici).
     var list = fichesForRole(s.id, roleKey);
     return '<section class="wrap">'+
       '<button type="button" class="btn btn-ghost btn-sm" data-nav="#/sessions/'+esc(s.id)+'" style="margin-bottom:18px;padding-left:0">← Retour à la session</button>'+
       '<div class="section-head" style="margin-bottom:16px">'+
         '<span class="kicker">'+esc(tpl.label)+'</span>'+
         '<h2 style="margin-bottom:4px">Fiches '+esc(tpl.label)+'</h2>'+
-        '<p style="margin:0">Session '+esc(s.name||"")+' — toutes les fiches déjà remplies pour ce rôle. La prochaine sera attribuée à '+esc(myName)+'.</p>'+
+        '<p style="margin:0">Session '+esc(s.name||"")+' — toutes les fiches déjà remplies pour ce rôle.</p>'+
       '</div>'+
       (list.length ? '<div class="grid-cards" style="margin-bottom:24px">'+list.map(function(f){
         var st = ficheStatusById(f.status);
@@ -3222,7 +3229,7 @@
     if(fiche.roleKey==="mentor") metaItems.push(["Présentateur / Présentatrice", esc(fiche.intervenantName||"—")]);
 
     return '<section class="wrap fiche-editor-page">'+
-      '<button type="button" class="btn btn-ghost btn-sm" data-nav="'+esc(backHashFor(fiche))+'" style="margin-bottom:18px;padding-left:0">← Retour</button>'+
+      '<button type="button" class="btn btn-ghost btn-sm" id="btnFicheBack" data-back-hash="'+esc(backHashFor(fiche))+'" style="margin-bottom:18px;padding-left:0">← Retour</button>'+
       '<div class="toolbar" style="margin-bottom:18px;align-items:flex-start">'+
         '<div class="section-head" style="margin:0">'+
           '<span class="kicker">'+esc(tpl.label)+'</span>'+
@@ -3394,6 +3401,29 @@
         render();
       });
     });
+
+    // "← Retour" depuis l'éditeur d'une fiche : on enregistre d'abord ce qui
+    // a été saisi (comme "Enregistrer et continuer plus tard"), pour ne
+    // jamais perdre de données en quittant la fiche — sauf s'il s'agit d'un
+    // brouillon tout neuf resté vide, auquel cas on ne crée pas de fiche
+    // inutile (voir la création "paresseuse" ailleurs dans ce fichier).
+    var btnFicheBack = document.getElementById("btnFicheBack");
+    if(btnFicheBack){
+      btnFicheBack.addEventListener("click", function(){
+        var d = state.ficheDraft;
+        var fallbackHash = btnFicheBack.getAttribute("data-back-hash");
+        if(!d || d.fiche.status==="termine"){ navTo(fallbackHash); return; }
+        var root = document.getElementById("ficheFormRoot");
+        var formData = root ? serializeFicheForm(d.tpl, root) : (d.data||{});
+        var intervenantInput = document.getElementById("ficheIntervenantInput");
+        var intervenantVal = intervenantInput ? intervenantInput.value.trim() : (d.fiche.intervenantName||"");
+        var hasContent = !!intervenantVal || (d.tpl.sections||[]).some(function(sec){
+          return sec.fields.some(function(f){ return fieldFilled(f, formData[f.key]); });
+        });
+        if(!d.fiche.id && !hasContent){ navTo(fallbackHash); return; }
+        saveFicheDraft(null, true);
+      });
+    }
 
     // Éditeur : actions de sauvegarde / validation.
     var btnSave = document.getElementById("btnFicheSave");
