@@ -1679,6 +1679,7 @@
   //   #/fiche/p/<propositionId>                  (fiche Mentor)
   function ficheRouteInfo(){
     var h = location.hash || "";
+    if(h.indexOf("#/fiche/mentor")===0) return {kind:"mentor-chooser"};
     var m1 = /^#\/fiche\/s\/([^\/]+)\/([^\/]+)\/([^\/]+)$/.exec(h);
     if(m1) return {kind:"session-editor", sessionId:decodeURIComponent(m1[1]), roleKey:decodeURIComponent(m1[2]), ficheId:decodeURIComponent(m1[3])};
     var m2 = /^#\/fiche\/s\/([^\/]+)\/([^\/]+)$/.exec(h);
@@ -2574,12 +2575,16 @@
       if(!unlocks) return;
       unlocks.forEach(function(fk){ if(ficheRoles.indexOf(fk)===-1) ficheRoles.push(fk); });
     });
+    // Le Mentor n'est pas rattaché à cette session en base (voir plus haut) :
+    // le chip navigue vers une liste de toutes les propositions à mentorer,
+    // au lieu d'une fiche unique pour cette session.
+    ficheRoles.push("mentor");
     return '<div class="section-head" style="margin:30px 0 16px">'+
         '<span class="kicker">Mes missions</span>'+
         '<h3 style="margin:0;font-size:18px">Remplir ma fiche</h3>'+
       '</div>'+
       '<div class="form-card mission-card">'+
-        '<p style="margin:0 0 14px;font-size:13px;color:var(--text-soft)">Cliquez sur votre rôle pour cette session pour remplir votre fiche d\'observation.</p>'+
+        '<p style="margin:0 0 14px;font-size:13px;color:var(--text-soft)">Cliquez sur votre rôle pour remplir votre fiche d\'observation.</p>'+
         '<div class="mission-chips">'+
           ficheRoles.map(function(fk){
             return '<button type="button" class="mission-chip" data-mission-open="'+esc(fk)+'">'+ICONS.file+' '+esc(FICHE_TEMPLATES[fk].label)+'</button>';
@@ -2883,6 +2888,9 @@
     if(!info){
       return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Fiche introuvable.</div></div></section>';
     }
+    if(info.kind==="mentor-chooser"){
+      return renderMentorFicheChooser();
+    }
     if(info.kind==="proposition"){
       return renderMentorFicheEditor(info.propositionId);
     }
@@ -2976,6 +2984,34 @@
     var existing = ficheForProposition(it.id, "mentor");
     var draft = existing || {id:null, propositionId:it.id, roleKey:"mentor", participantName:it.mentorName||"", intervenantName:it.presenterName||"", status:"a_remplir", formData:{}};
     return renderFicheEditorPage(null, tpl, draft, it);
+  }
+
+  // Accessible depuis « Mes missions » (chip Mentor) sur n'importe quelle
+  // page de session : comme un mentorat n'est pas rattaché à une session en
+  // base (voir plus haut), on liste ici toutes les propositions ayant un
+  // mentor, tous sujets confondus, pour retrouver la sienne en un clic.
+  function renderMentorFicheChooser(){
+    var list = itemsSorted().filter(function(it){ return !!it.mentorName; });
+    return '<section class="wrap">'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-nav="#/sessions" style="margin-bottom:18px;padding-left:0">← Retour aux sessions</button>'+
+      '<div class="section-head" style="margin-bottom:16px">'+
+        '<span class="kicker">'+esc(FICHE_TEMPLATES.mentor.label)+'</span>'+
+        '<h2 style="margin-bottom:4px">Mes fiches Mentor</h2>'+
+        '<p style="margin:0">Choisissez le mentorat à remplir (une fiche par binôme mentor/présentateur).</p>'+
+      '</div>'+
+      (list.length ?
+        '<div class="grid-cards">'+list.map(function(it){
+          var existing = ficheForProposition(it.id, "mentor");
+          var st = existing ? ficheStatusById(existing.status) : null;
+          return '<div class="talk-card" data-nav="#/fiche/p/'+esc(it.id)+'" role="button" tabindex="0">'+
+            (st ? '<div class="mc-top"><span class="pill '+st.pill+'">'+esc(st.label)+'</span></div>' : '')+
+            '<h3 style="font-size:16px">'+esc(it.title)+'</h3>'+
+            '<div class="meta-row">'+ICONS.mentor+' Mentor : '+esc(it.mentorName||"—")+'</div>'+
+            '<div class="meta-row">Présentateur(trice) : '+esc(it.presenterName||"—")+'</div>'+
+          '</div>';
+        }).join("")+'</div>'
+        : '<div class="empty-state">'+ICONS.empty+'<div>Aucune proposition avec un mentor pour le moment.</div></div>')+
+    '</section>';
   }
 
   function backHashFor(fiche){
@@ -3322,6 +3358,7 @@
     document.querySelectorAll("[data-mission-open]").forEach(function(btn){
       btn.addEventListener("click", function(){
         var ficheRole = btn.getAttribute("data-mission-open");
+        if(ficheRole==="mentor"){ navTo("#/fiche/mentor"); return; }
         navTo("#/fiche/s/"+encodeURIComponent(id)+"/"+encodeURIComponent(ficheRole));
       });
     });
