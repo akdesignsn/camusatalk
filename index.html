@@ -361,15 +361,23 @@
   .fiche-section .field textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-family:inherit;font-size:13.5px}
   .fiche-section .field textarea{resize:vertical}
 
-  .fiche-table{width:100%;border-collapse:collapse;font-size:13px}
-  .fiche-table th{background:var(--navy);color:#fff;text-align:left;padding:9px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
-  .fiche-table td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
-  .fiche-table tr:nth-child(even) td{background:var(--navy-tint)}
-  .fiche-row-label{font-weight:600;white-space:nowrap}
-  .fiche-table .chk-col{text-align:center;width:1%}
-  .fiche-table .chk-cell{text-align:center}
-  .fiche-table input[type="text"]{width:100%;min-width:110px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px}
-  .fiche-table input[type="checkbox"]{width:18px;height:18px}
+  /* Champs "tableau" des fiches (notes_table, checklist_table, rating_table,
+     repeatable_table) : on ne rend plus un <table> avec des colonnes qu'il
+     fallait faire défiler horizontalement sur mobile ("je glisse tout le
+     temps"). Chaque ligne devient une "rubrique" (carte) autonome, avec ses
+     champs empilés verticalement — remplissage naturel au doigt, sans aucun
+     défilement latéral, sur mobile comme sur desktop. */
+  .fiche-row-cards{display:flex;flex-direction:column;gap:12px}
+  .fiche-row-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:var(--navy-tint)}
+  .fiche-row-card .field{margin-bottom:12px}
+  .fiche-row-card .field:last-child{margin-bottom:0}
+  .fiche-row-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .fiche-row-card-title{font-size:13.5px;font-weight:700;color:var(--navy);margin:0}
+  .fiche-row-card-check{display:inline-flex;align-items:center;gap:10px;cursor:pointer}
+  .fiche-row-card-check input[type="checkbox"]{width:18px;height:18px;flex-shrink:0}
+  .fiche-row-card input[type="text"],
+  .fiche-row-card textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font-family:inherit;font-size:13.5px}
+  .fiche-row-card textarea{resize:vertical}
 
   .radio-row,.checkbox-row{display:flex;gap:16px;flex-wrap:wrap}
   .radio-opt,.chk-opt{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);cursor:pointer}
@@ -703,7 +711,7 @@
       ],
       sections: [
         { title: "Suivi des interventions", fields: [
-          { type:"repeatable_table", key:"interventions", addLabel:"Ajouter un(e) intervenant(e)", minRows:3, columns:[
+          { type:"repeatable_table", key:"interventions", addLabel:"Ajouter un(e) intervenant(e)", rowLabel:"Intervenant(e)", minRows:3, columns:[
             {key:"intervenant", label:"Intervenant(e)", type:"text"},
             {key:"tempsPrevu", label:"Temps prévu", type:"text", placeholder:"ex. 7 min"},
             {key:"tempsRealise", label:"Temps réalisé", type:"text", placeholder:"ex. 8 min"},
@@ -803,7 +811,7 @@
           { type:"textarea", key:"action", label:"Action" }
         ]},
         { title: "5. Suivi pour la prochaine session", fields: [
-          { type:"repeatable_table", key:"suivi", addLabel:"Ajouter une ligne", minRows:3, columns:[
+          { type:"repeatable_table", key:"suivi", addLabel:"Ajouter une ligne", rowLabel:"Point", minRows:3, columns:[
             {key:"pointARetravailler", label:"Point à retravailler", type:"text"},
             {key:"indicateur", label:"Indicateur de progression", type:"text"},
             {key:"aRevoir", label:"À revoir lors de la prochaine session", type:"text"}
@@ -2867,46 +2875,60 @@
         (f.allowOther ? '<label class="chk-opt chk-opt-other">Autre <input type="text" data-fk="'+f.otherKey+'" value="'+esc(otherVal)+'"></label>' : '')+
         '</div></div>';
     }
+    // notes_table, checklist_table, rating_table, repeatable_table : chaque
+    // ligne devient une "rubrique" (carte) autonome — plus de tableau HTML à
+    // faire défiler horizontalement, les champs de la ligne s'empilent
+    // verticalement (voir .fiche-row-card, plus haut dans le CSS).
     if(f.type==="notes_table"){
       var rowsVal = val||{};
-      return '<div class="field"><div class="table-wrap"><table class="fiche-table"><thead><tr><th>Élément observé</th><th>'+esc(f.noteLabel||"Notes")+'</th></tr></thead><tbody>'+
+      return '<div class="field"><div class="fiche-row-cards">'+
         f.rows.map(function(r){
           var rv = rowsVal[r.key]||"";
-          return '<tr><td class="fiche-row-label">'+esc(r.label)+'</td><td><textarea data-fk-table="'+f.key+'" data-row="'+r.key+'" rows="2">'+esc(rv)+'</textarea></td></tr>';
-        }).join("")+'</tbody></table></div></div>';
+          return '<div class="fiche-row-card">'+
+            '<div class="fiche-row-card-head"><h5 class="fiche-row-card-title">'+esc(r.label)+'</h5></div>'+
+            '<div class="field"><label>'+esc(f.noteLabel||"Notes")+'</label><textarea data-fk-table="'+f.key+'" data-row="'+r.key+'" rows="2">'+esc(rv)+'</textarea></div>'+
+          '</div>';
+        }).join("")+
+      '</div></div>';
     }
     if(f.type==="checklist_table"){
       var rowsVal2 = val||{};
-      return '<div class="field"><div class="table-wrap"><table class="fiche-table"><thead><tr><th>Critère</th><th class="chk-col">✓</th><th>Observations</th></tr></thead><tbody>'+
+      return '<div class="field"><div class="fiche-row-cards">'+
         f.rows.map(function(r){
           var rv = rowsVal2[r.key]||{};
-          return '<tr><td class="fiche-row-label">'+esc(r.label)+'</td>'+
-            '<td class="chk-cell"><input type="checkbox" data-fk-table-check="'+f.key+'" data-row="'+r.key+'"'+(rv.checked?" checked":"")+'></td>'+
-            '<td><input type="text" data-fk-table-obs="'+f.key+'" data-row="'+r.key+'" value="'+esc(rv.observation||"")+'"></td></tr>';
-        }).join("")+'</tbody></table></div></div>';
+          return '<div class="fiche-row-card">'+
+            '<div class="fiche-row-card-head">'+
+              '<label class="fiche-row-card-check"><input type="checkbox" data-fk-table-check="'+f.key+'" data-row="'+r.key+'"'+(rv.checked?" checked":"")+'> <span class="fiche-row-card-title">'+esc(r.label)+'</span></label>'+
+            '</div>'+
+            '<div class="field"><label>Observations</label><input type="text" data-fk-table-obs="'+f.key+'" data-row="'+r.key+'" value="'+esc(rv.observation||"")+'"></div>'+
+          '</div>';
+        }).join("")+
+      '</div></div>';
     }
     if(f.type==="rating_table"){
       var rowsVal3 = val||{};
-      return '<div class="field"><div class="table-wrap"><table class="fiche-table"><thead><tr><th>Critère</th>'+
-        f.options.map(function(o){ return '<th class="chk-col">'+esc(o.label)+'</th>'; }).join("")+
-        '<th>Observation</th></tr></thead><tbody>'+
+      return '<div class="field"><div class="fiche-row-cards">'+
         f.rows.map(function(r){
           var rv = rowsVal3[r.key]||{};
-          return '<tr><td class="fiche-row-label">'+esc(r.label)+'</td>'+
-            f.options.map(function(o){
-              return '<td class="chk-cell"><input type="radio" name="fk_'+f.key+'_'+r.key+'" data-fk-table-radio="'+f.key+'" data-row="'+r.key+'" value="'+o.value+'"'+(rv.rating===o.value?" checked":"")+'></td>';
-            }).join("")+
-            '<td><input type="text" data-fk-table-obs="'+f.key+'" data-row="'+r.key+'" value="'+esc(rv.observation||"")+'"></td></tr>';
-        }).join("")+'</tbody></table></div></div>';
+          return '<div class="fiche-row-card">'+
+            '<div class="fiche-row-card-head"><h5 class="fiche-row-card-title">'+esc(r.label)+'</h5></div>'+
+            '<div class="field"><div class="radio-row">'+
+              f.options.map(function(o){
+                return '<label class="radio-opt"><input type="radio" name="fk_'+f.key+'_'+r.key+'" data-fk-table-radio="'+f.key+'" data-row="'+r.key+'" value="'+o.value+'"'+(rv.rating===o.value?" checked":"")+'> '+esc(o.label)+'</label>';
+              }).join("")+
+            '</div></div>'+
+            '<div class="field"><label>Observation</label><input type="text" data-fk-table-obs="'+f.key+'" data-row="'+r.key+'" value="'+esc(rv.observation||"")+'"></div>'+
+          '</div>';
+        }).join("")+
+      '</div></div>';
     }
     if(f.type==="repeatable_table"){
       var rowsArr = Array.isArray(val) ? val.slice() : [];
       while(rowsArr.length < (f.minRows||1)) rowsArr.push({});
-      return '<div class="field"><div class="table-wrap"><table class="fiche-table"><thead><tr>'+
-        f.columns.map(function(c){ return '<th>'+esc(c.label)+'</th>'; }).join("")+'<th></th></tr></thead>'+
-        '<tbody data-repeat-body="'+f.key+'">'+
+      return '<div class="field">'+
+        '<div class="fiche-row-cards" data-repeat-body="'+f.key+'">'+
           rowsArr.map(function(row, idx){ return renderRepeatableRow(f, row, idx); }).join("")+
-        '</tbody></table></div>'+
+        '</div>'+
         '<button type="button" class="btn btn-ghost btn-sm" data-fiche-add-row="'+f.key+'" style="margin-top:8px">'+ICONS.plus+' '+(f.addLabel||"Ajouter une ligne")+'</button>'+
         '</div>';
     }
@@ -2915,17 +2937,19 @@
 
   function renderRepeatableRow(f, row, idx){
     row = row || {};
-    return '<tr data-repeat-row="'+idx+'">'+
+    return '<div class="fiche-row-card" data-repeat-row="'+idx+'">'+
+      '<div class="fiche-row-card-head"><h5 class="fiche-row-card-title">'+esc(f.rowLabel||"Ligne")+' '+(idx+1)+'</h5>'+
+        '<button type="button" class="icon-btn" data-fiche-remove-row="'+idx+'" title="Retirer cette ligne">'+ICONS.close+'</button>'+
+      '</div>'+
       f.columns.map(function(c){
         if(c.type==="radio"){
-          return '<td class="chk-cell">'+c.options.map(function(o){
+          return '<div class="field"><label>'+esc(c.label)+'</label><div class="radio-row">'+c.options.map(function(o){
             return '<label class="radio-opt"><input type="radio" name="fk_'+f.key+'_'+idx+'_'+c.key+'" data-fk-rep-radio="'+c.key+'" value="'+o.value+'"'+(row[c.key]===o.value?" checked":"")+'> '+esc(o.label)+'</label>';
-          }).join(" ")+'</td>';
+          }).join(" ")+'</div></div>';
         }
-        return '<td><input type="text" data-fk-rep="'+c.key+'" placeholder="'+esc(c.placeholder||"")+'" value="'+esc(row[c.key]||"")+'"></td>';
+        return '<div class="field"><label>'+esc(c.label)+'</label><input type="text" data-fk-rep="'+c.key+'" placeholder="'+esc(c.placeholder||"")+'" value="'+esc(row[c.key]||"")+'"></div>';
       }).join("")+
-      '<td><button type="button" class="icon-btn" data-fiche-remove-row="'+idx+'" title="Retirer cette ligne">'+ICONS.close+'</button></td>'+
-    '</tr>';
+    '</div>';
   }
 
   // Relit le DOM du formulaire (plutôt qu'un FormData générique, pour gérer
