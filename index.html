@@ -316,6 +316,55 @@
   .role-add-form input{padding:6px 10px;font-size:12.5px;width:170px}
   @media (max-width:640px){.role-row{flex-direction:column;align-items:stretch}.role-label{min-width:0}}
 
+  /* ---------- Mes missions / Fiches numériques ---------- */
+  .mission-card{padding:24px}
+  .mission-chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .mission-chip{display:inline-flex;align-items:center;gap:8px;background:var(--navy-tint);color:var(--navy);border:1px solid var(--border);font-size:13px;font-weight:700;padding:9px 16px;border-radius:999px;cursor:pointer;transition:background .15s,color .15s}
+  .mission-chip:hover{background:var(--navy);color:#fff}
+  .mission-chip svg{opacity:.85}
+  .dt-value-sub{font-weight:400;color:var(--text-soft);font-size:12.5px}
+
+  .fiche-progress-wrap{margin:4px 0 22px;display:flex;flex-direction:column;gap:6px}
+  .fiche-progress-bar{height:8px;border-radius:999px;background:var(--navy-tint);overflow:hidden}
+  .fiche-progress-fill{height:100%;background:var(--red);border-radius:999px;transition:width .2s}
+  .fiche-progress-label{font-size:12px;color:var(--text-soft)}
+
+  .fiche-intro{display:grid;gap:14px;margin-bottom:22px}
+  .fiche-intro-block{background:var(--navy-tint);border-radius:var(--radius-sm);padding:14px 18px}
+  .fiche-intro-block h5{margin:0 0 6px;font-size:13px;color:var(--navy);text-transform:uppercase;letter-spacing:.04em}
+  .fiche-intro-block p{margin:0;font-size:13px}
+  .fiche-intro-block ul{margin:0;padding-left:18px;font-size:13px;color:var(--text-muted)}
+  .fiche-intro-block ul li{margin-bottom:2px}
+  .mini-info-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+  .mini-info-table td{padding:5px 8px;border-bottom:1px solid var(--border)}
+  .mini-info-table tr:last-child td{border-bottom:none}
+
+  .fiche-section{margin-bottom:28px}
+  .fiche-section h4{font-size:15.5px;margin:0 0 14px;color:var(--navy)}
+  .fiche-section .field{margin-bottom:16px}
+  .fiche-section .field label{display:block;font-size:12.5px;font-weight:700;color:var(--text-muted);margin-bottom:6px}
+  .fiche-section .field input[type="text"],
+  .fiche-section .field textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-family:inherit;font-size:13.5px}
+  .fiche-section .field textarea{resize:vertical}
+
+  .fiche-table{width:100%;border-collapse:collapse;font-size:13px}
+  .fiche-table th{background:var(--navy);color:#fff;text-align:left;padding:9px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
+  .fiche-table td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+  .fiche-table tr:nth-child(even) td{background:var(--navy-tint)}
+  .fiche-row-label{font-weight:600;white-space:nowrap}
+  .fiche-table .chk-col{text-align:center;width:1%}
+  .fiche-table .chk-cell{text-align:center}
+  .fiche-table input[type="text"]{width:100%;min-width:110px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px}
+  .fiche-table input[type="checkbox"]{width:18px;height:18px}
+
+  .radio-row,.checkbox-row{display:flex;gap:16px;flex-wrap:wrap}
+  .radio-opt,.chk-opt{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);cursor:pointer}
+  .chk-opt-other input[type="text"]{padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px}
+
+  .fiche-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:26px;padding-top:20px;border-top:1px solid var(--border)}
+  .fiche-locked-note{display:flex;align-items:center;gap:8px;margin-top:26px;padding:16px 18px;background:var(--st-real-bg);color:var(--st-real-fg);border-radius:var(--radius-sm);font-size:13.5px;font-weight:600}
+  .fiche-locked-note svg{width:18px;height:18px;flex-shrink:0}
+
   /* ---------- Bannière prochaine session ---------- */
   .session-banner{background:var(--red);color:#fff;border-radius:20px;padding:28px 32px;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 14px 32px -12px rgba(200,16,46,.45);display:block}
   .session-banner:hover{transform:translateY(-2px);box-shadow:0 20px 40px -12px rgba(200,16,46,.55)}
@@ -513,6 +562,210 @@
   // statique). Change cette valeur avant toute diffusion large de l'application.
   var ADMIN_CODE = "CAMUSAT2026";
 
+  /* ============================= FICHES DE RÔLE ============================= */
+  // Version numérique des fiches papier (Grammarian, Timekeeper, Posture
+  // Visualizer, Évaluateur, Mentor) : chaque personne assignée à un rôle de
+  // session (ou mentor d'une proposition) peut remplir sa fiche directement
+  // dans l'application, avec sauvegarde persistante (table Supabase
+  // "fiche_reponses", voir README.md pour le SQL de création).
+  //
+  // Deux "portées" de fiche :
+  // - "session"            : une seule fiche par session pour cette personne
+  //                          (Timekeeper, qui suit toutes les interventions
+  //                          dans un même tableau).
+  // - "session_intervenant" : une fiche par intervenant(e) observé(e) dans la
+  //                          session (Grammarian, Posture Visualizer,
+  //                          Évaluateur) — la même personne peut donc remplir
+  //                          plusieurs fiches (une par présentation suivie).
+  // - "proposition"         : une fiche rattachée directement à une
+  //                          proposition (Mentor) — aucun lien formel entre
+  //                          "sessions" et "propositions" n'existe dans cette
+  //                          app (voir README), donc la fiche Mentor se
+  //                          rattache à la proposition elle-même plutôt qu'à
+  //                          une session.
+  var FICHE_SCOPE = {
+    grammarian: "session_intervenant",
+    timekeeper: "session",
+    posture_visualizer: "session_intervenant",
+    evaluateur: "session_intervenant",
+    mentor: "proposition"
+  };
+  // Quelles fiches numériques chaque rôle de SESSION_ROLES déverrouille (un
+  // même rôle "timekeeper" couvre deux fiches distinctes : Timekeeper et
+  // Posture Visualizer, comme sur le terrain).
+  var FICHE_UNLOCKS_BY_SESSION_ROLE = {
+    grammarian: ["grammarian"],
+    timekeeper: ["timekeeper", "posture_visualizer"],
+    evaluateurs: ["evaluateur"]
+  };
+  var FICHE_STATUSES = [
+    {id:"a_remplir", label:"À remplir", pill:"pill-attente"},
+    {id:"en_cours", label:"En cours", pill:"pill-programmee"},
+    {id:"termine", label:"Terminée", pill:"pill-realisee"}
+  ];
+  function ficheStatusById(id){ return FICHE_STATUSES.find(function(s){return s.id===id}) || FICHE_STATUSES[0]; }
+
+  // ---- Définition des champs de chaque fiche (fidèle au contenu des fiches
+  // papier d'origine : mêmes titres, mêmes consignes, mêmes critères). Types
+  // de champ pris en charge par le moteur de formulaire générique plus bas :
+  //  text / textarea / checkbox_group / notes_table / checklist_table /
+  //  rating_table / repeatable_table.
+  var FICHE_TEMPLATES = {
+    grammarian: {
+      label: "Grammarian",
+      subtitle: "Fiche d'observation",
+      sections: [
+        { title: "1. Observation du langage", fields: [
+          { type:"notes_table", key:"observations", noteLabel:"Notes / exemples", rows: [
+            {key:"mots_bien_utilises", label:"Mots / expressions bien utilisés"},
+            {key:"erreurs_grammaticales", label:"Erreurs grammaticales"},
+            {key:"prononciation", label:"Prononciation"},
+            {key:"repetitions_mots", label:"Répétitions de mots"},
+            {key:"vocabulaire", label:"Vocabulaire / richesse du langage"}
+          ]}
+        ]},
+        { title: "2. Tics de langage repérés", fields: [
+          { type:"checkbox_group", key:"tics", allowOther:true, otherKey:"ticsAutre", options:[
+            {value:"euh", label:"Euh"}, {value:"donc", label:"Donc"}, {value:"en_fait", label:"En fait"},
+            {value:"du_coup", label:"Du coup"}, {value:"voila", label:"Voilà"}
+          ]},
+          { type:"text", key:"nbRepetitions", label:"Nombre approximatif de répétitions" }
+        ]},
+        { title: "3. Feedback rapide", fields: [
+          { type:"textarea", key:"pointFort", label:"Point fort" },
+          { type:"textarea", key:"correction", label:"Correction / amélioration" },
+          { type:"textarea", key:"conseil", label:"Conseil pour la prochaine session" }
+        ]},
+        { title: "4. Mot / expression à retenir", fields: [
+          { type:"text", key:"motARetenir", label:"Mot ou expression" },
+          { type:"text", key:"utilisation", label:"Utilisation / correction" }
+        ]}
+      ]
+    },
+    timekeeper: {
+      label: "Timekeeper",
+      subtitle: "Suivi du temps de la session",
+      intro: [
+        {h:"Mission", p:"Veiller au respect du temps imparti pour chaque intervention et aider les participants à gérer leur temps efficacement."},
+        {h:"Avant la session", ul:["Vérifier le temps prévu pour chaque intervention.","Préparer le chronomètre.","Informer les participants des signaux utilisés."]},
+        {h:"À la fin de la session", p:"Faire un retour très court sur la gestion du temps : temps globalement respecté, éventuels dépassements et observation générale."},
+        {h:"Signalisation", table:[["🟢 VERT","Le temps est bien engagé"],["🟡 JAUNE","Il reste peu de temps"],["🔴 ROUGE","Temps écoulé"]]}
+      ],
+      sections: [
+        { title: "Suivi des interventions", fields: [
+          { type:"repeatable_table", key:"interventions", addLabel:"Ajouter un(e) intervenant(e)", minRows:3, columns:[
+            {key:"intervenant", label:"Intervenant(e)", type:"text"},
+            {key:"tempsPrevu", label:"Temps prévu", type:"text", placeholder:"ex. 7 min"},
+            {key:"tempsRealise", label:"Temps réalisé", type:"text", placeholder:"ex. 8 min"},
+            {key:"respectTemps", label:"Respect du temps", type:"radio", options:[{value:"oui",label:"Oui"},{value:"non",label:"Non"}]}
+          ]}
+        ]}
+      ]
+    },
+    posture_visualizer: {
+      label: "Posture Visualizer",
+      subtitle: "Fiche d'observation",
+      needsIntervenant: true,
+      sections: [
+        { title: "1. Posture & présence", fields: [
+          { type:"checklist_table", key:"posture", rows:[
+            {key:"posture_stable", label:"Posture naturelle et stable"},
+            {key:"regard_public", label:"Regard vers le public"},
+            {key:"gestuelle", label:"Gestuelle naturelle et adaptée"},
+            {key:"deplacements", label:"Déplacements maîtrisés"},
+            {key:"expression_visage", label:"Expression du visage"},
+            {key:"presence_aisance", label:"Présence / aisance"}
+          ]}
+        ]},
+        { title: "2. Visualisation & supports", fields: [
+          { type:"checklist_table", key:"supports", rows:[
+            {key:"supports_lisibles", label:"Supports lisibles"},
+            {key:"position_ecran", label:"Bonne position face à l'écran"},
+            {key:"visuels_utiles", label:"Visuels utiles au message"},
+            {key:"transitions", label:"Transitions / utilisation fluides"}
+          ]}
+        ]},
+        { title: "3. Feedback rapide", fields: [
+          { type:"textarea", key:"pointFort", label:"Point fort" },
+          { type:"textarea", key:"aAmeliorer", label:"À améliorer" },
+          { type:"textarea", key:"conseil", label:"Conseil pour la prochaine session" }
+        ]},
+        { title: "4. Observation / exemple concret", fields: [
+          { type:"textarea", key:"observationLibre", label:"", rows:5 }
+        ]}
+      ]
+    },
+    evaluateur: {
+      label: "Évaluateur / Évaluatrice",
+      subtitle: "Fiche d'évaluation — présentation",
+      needsIntervenant: true,
+      sections: [
+        { title: "1. Critères d'évaluation", fields: [
+          { type:"rating_table", key:"criteres", options:[
+              {value:"tres_bien", label:"Très bien"}, {value:"bien", label:"Bien"}, {value:"a_renforcer", label:"À renforcer"}
+            ], rows:[
+            {key:"structure", label:"Structure et organisation"},
+            {key:"clarte", label:"Clarté du message"},
+            {key:"maitrise_sujet", label:"Maîtrise du sujet"},
+            {key:"communication_orale", label:"Qualité de la communication orale"},
+            {key:"posture_presence", label:"Posture et présence"},
+            {key:"interaction_public", label:"Interaction avec le public"},
+            {key:"gestion_temps", label:"Gestion du temps"}
+          ]}
+        ]},
+        { title: "2. Retour sur la présentation", fields: [
+          { type:"textarea", key:"pointsForts", label:"Points forts" },
+          { type:"textarea", key:"axesAmelioration", label:"Axes d'amélioration" },
+          { type:"textarea", key:"recommandation", label:"Recommandation prioritaire" }
+        ]},
+        { title: "3. Gestion du temps", fields: [
+          { type:"text", key:"tempsPrevu", label:"Temps prévu", placeholder:"min" },
+          { type:"text", key:"tempsRealise", label:"Temps réalisé", placeholder:"min" },
+          { type:"radio", key:"respectTemps", label:"Respect du temps", options:[{value:"oui",label:"Oui"},{value:"non",label:"Non"}] }
+        ]},
+        { title: "4. Objectif pour la prochaine présentation", fields: [
+          { type:"text", key:"objectifSuivant", label:"Objectif" }
+        ]},
+        { title: "Notes", fields: [
+          { type:"textarea", key:"notes", label:"", rows:5 }
+        ]}
+      ]
+    },
+    mentor: {
+      label: "Mentor",
+      subtitle: "Fiche d'accompagnement",
+      sections: [
+        { title: "1. Objectif de la session", fields: [
+          { type:"text", key:"objectifTravaille", label:"Objectif travaillé" }
+        ]},
+        { title: "2. Observation du mentor", fields: [
+          { type:"notes_table", key:"observations", noteLabel:"Observation", rows:[
+            {key:"deja_maitrise", label:"Ce qui est déjà bien maîtrisé"},
+            {key:"difficulte_principale", label:"Difficulté principale observée"},
+            {key:"evolution", label:"Évolution depuis la dernière session"},
+            {key:"besoin_accompagnement", label:"Besoin d'accompagnement"}
+          ]}
+        ]},
+        { title: "3. Conseil du mentor", fields: [
+          { type:"textarea", key:"conseilPrincipal", label:"Conseil principal" }
+        ]},
+        { title: "4. Action concrète à mettre en pratique", fields: [
+          { type:"textarea", key:"action", label:"Action" }
+        ]},
+        { title: "5. Suivi pour la prochaine session", fields: [
+          { type:"repeatable_table", key:"suivi", addLabel:"Ajouter une ligne", minRows:3, columns:[
+            {key:"pointARetravailler", label:"Point à retravailler", type:"text"},
+            {key:"indicateur", label:"Indicateur de progression", type:"text"},
+            {key:"aRevoir", label:"À revoir lors de la prochaine session", type:"text"}
+          ]}
+        ]},
+        { title: "6. Commentaire final", fields: [
+          { type:"textarea", key:"commentaireFinal", label:"", rows:6 }
+        ]}
+      ]
+    }
+  };
+
   function themeById(id){ return THEMES.find(function(t){return t.id===id}) || THEMES[THEMES.length-1]; }
   function statusById(id){ return STATUSES.find(function(s){return s.id===id}) || STATUSES[0]; }
   function esc(s){ return (s==null?"":String(s)).replace(/[&<>"']/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
@@ -532,6 +785,22 @@
     var m = String(d.getMonth()+1).padStart(2,"0");
     var day = String(d.getDate()).padStart(2,"0");
     return d.getFullYear()+"-"+m+"-"+day;
+  }
+  // "Mes missions" n'exige aucun compte (comme le reste de l'app) : on se
+  // contente de retenir localement (ce navigateur uniquement) le dernier nom
+  // saisi, par confort, pour ne pas le retaper à chaque visite.
+  function getMyName(){
+    try{ return localStorage.getItem("ctMyName") || ""; }catch(e){ return ""; }
+  }
+  function setMyName(name){
+    try{ localStorage.setItem("ctMyName", name||""); }catch(e){}
+  }
+  function fmtDateTimeShort(iso){
+    if(!iso) return "—";
+    try{
+      var d = new Date(iso);
+      return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"short"})+" à "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+    }catch(e){ return iso; }
   }
   function fmtSessionDateTime(iso){
     if(!iso) return "—";
@@ -588,6 +857,7 @@
     sessions: [],
     affiches: [],
     medias: [],
+    fiches: [],
     adminUnlocked: false,
     filters: { theme: "", status: "", q: "" },
     lastSubmitted: null,
@@ -597,8 +867,12 @@
     confirmDeleteMedias: {},
     roleAddOpen: null, /* id of the role currently showing its inline "add person" form, on the session detail page */
     roleAddDraft: "", /* texte en cours de saisie dans ce formulaire : conservé dans `state` (et non dans le seul DOM) pour survivre à un re-rendu déclenché par un rafraîchissement en arrière-plan pendant que l'utilisateur tape */
-    dashTab: "propositions", /* onglet actif dans le Dashboard : "propositions", "affiches" ou "medias" */
-    mediaFilter: "tout" /* filtre actif sur la page publique Média : "tout", "photo" ou "video" */
+    dashTab: "propositions", /* onglet actif dans le Dashboard : "propositions", "affiches", "medias" ou "fiches" */
+    mediaFilter: "tout", /* filtre actif sur la page publique Média : "tout", "photo" ou "video" */
+    myNameDraft: null, /* texte en cours de saisie dans le champ "Votre nom" de Mes missions, tant qu'il n'a pas été validé (survit à un re-rendu pendant la frappe) */
+    ficheNewIntervenant: "", /* texte en cours de saisie dans le formulaire "nouvelle fiche pour un(e) intervenant(e)" */
+    ficheAdminFilterSession: "", /* session choisie dans l'onglet Fiches du Dashboard (sert aussi d'archives) */
+    ficheAdminView: null /* id de la fiche actuellement ouverte en lecture seule par l'administrateur */
   };
 
   /* Stockage : Supabase (base de données partagée, accessible sans compte
@@ -748,6 +1022,33 @@
     return "https://img.youtube.com/vi/"+id+"/hqdefault.jpg";
   }
 
+  /* Fiches de rôle CAMUSAT TALK (Grammarian, Timekeeper, Posture Visualizer,
+     Évaluateur, Mentor) : table Supabase séparée "fiche_reponses", sans lien
+     formel avec "sessions" ou "propositions" au niveau base de données (une
+     simple colonne id nullable de chaque côté selon la portée de la fiche —
+     voir FICHE_SCOPE plus haut). Les réponses elles-mêmes sont stockées dans
+     une colonne JSON ("form_data"), comme pour "roles" sur les sessions :
+     un même formulaire générique (voir renderFicheFields) sait lire/écrire
+     ce JSON pour n'importe quel type de fiche, sans table dédiée par rôle. */
+  var LOCAL_FICHES_FALLBACK = [];
+  var FICHE_FIELD_MAP = {
+    sessionId:"session_id", propositionId:"proposition_id", roleKey:"role_key",
+    participantName:"participant_name", intervenantName:"intervenant_name",
+    status:"status", formData:"form_data", submittedAt:"submitted_at"
+  };
+  function toFicheDbRow(v){
+    var out = {};
+    Object.keys(FICHE_FIELD_MAP).forEach(function(k){ if(v[k]!==undefined) out[FICHE_FIELD_MAP[k]] = v[k]; });
+    return out;
+  }
+  function fromFicheDbRow(r){
+    var out = { id:r.id, createdAt:r.created_at, updatedAt:r.updated_at };
+    Object.keys(FICHE_FIELD_MAP).forEach(function(k){ out[k] = r[FICHE_FIELD_MAP[k]]; });
+    if(!out.formData) out.formData = {};
+    return out;
+  }
+  function normalizeName(n){ return (n||"").trim().toLowerCase(); }
+
   var sb = null;
 
   /* ============================= TOASTS ============================= */
@@ -776,7 +1077,8 @@
         fetchAllSessions();
         fetchAllAffiches();
         fetchAllMedias();
-        setInterval(function(){ fetchAll(); fetchAllSessions(); fetchAllAffiches(); fetchAllMedias(); }, SUPABASE_POLL_MS);
+        fetchAllFiches();
+        setInterval(function(){ fetchAll(); fetchAllSessions(); fetchAllAffiches(); fetchAllMedias(); fetchAllFiches(); }, SUPABASE_POLL_MS);
         return;
       }
     }catch(e){ console.warn("Supabase init failed", e); }
@@ -784,6 +1086,7 @@
     state.sessions = LOCAL_SESSIONS_FALLBACK;
     state.affiches = LOCAL_AFFICHES_FALLBACK;
     state.medias = LOCAL_MEDIAS_FALLBACK;
+    state.fiches = LOCAL_FICHES_FALLBACK;
     render();
   }
 
@@ -951,6 +1254,81 @@
     var now = new Date().toISOString();
     var upcoming = sessionsSorted().filter(function(s){ return s.sessionDatetime && s.sessionDatetime >= now; });
     return upcoming.length ? upcoming[0] : null;
+  }
+
+  /* ============================= DB LAYER (Fiches) ============================= */
+  function fetchAllFiches(){
+    if(!sb) return;
+    sb.from("fiche_reponses").select("*").order("updated_at", {ascending:false}).then(function(res){
+      if(res.error){ console.warn("Supabase select error (fiche_reponses)", res.error); return; }
+      state.fiches = (res.data||[]).map(fromFicheDbRow);
+      if(currentRoute()==="proposer" || isEditingSomething()) return;
+      render();
+    });
+  }
+  function ficheById(id){
+    return state.fiches.find(function(f){ return String(f.id)===String(id); });
+  }
+  // Fiches "session_intervenant" déjà existantes pour (session, rôle, nom) —
+  // une même personne peut en avoir plusieurs (une par intervenant(e) suivi(e)).
+  function fichesFor(sessionId, roleKey, participantName){
+    var nn = normalizeName(participantName);
+    return state.fiches.filter(function(f){
+      return f.roleKey===roleKey && String(f.sessionId)===String(sessionId) && normalizeName(f.participantName)===nn;
+    }).sort(function(a,b){ return (b.updatedAt||b.createdAt||"").localeCompare(a.updatedAt||a.createdAt||""); });
+  }
+  // Fiche "session" unique (Timekeeper) pour (session, rôle, nom).
+  function singleFicheFor(sessionId, roleKey, participantName){
+    var list = fichesFor(sessionId, roleKey, participantName);
+    return list.length ? list[0] : null;
+  }
+  function ficheForProposition(propositionId, roleKey){
+    return state.fiches.find(function(f){ return f.roleKey===roleKey && String(f.propositionId)===String(propositionId); }) || null;
+  }
+  function fichesForSessionAdmin(sessionId){
+    return state.fiches.filter(function(f){ return f.sessionId && String(f.sessionId)===String(sessionId); })
+      .sort(function(a,b){ return (b.updatedAt||b.createdAt||"").localeCompare(a.updatedAt||a.createdAt||""); });
+  }
+  function createFiche(data, cb){
+    data.status = data.status || "en_cours";
+    if(sb){
+      var row = toFicheDbRow(data);
+      row.created_at = new Date().toISOString();
+      row.updated_at = row.created_at;
+      sb.from("fiche_reponses").insert([row]).select().then(function(res){
+        if(res.error){ cb(false, res.error); return; }
+        fetchAllFiches();
+        var created = res.data && res.data[0] ? fromFicheDbRow(res.data[0]) : null;
+        cb(true, null, created);
+      });
+    } else {
+      data.id = uid();
+      data.createdAt = new Date().toISOString();
+      data.updatedAt = data.createdAt;
+      LOCAL_FICHES_FALLBACK.unshift(data);
+      state.fiches = LOCAL_FICHES_FALLBACK;
+      cb(true, null, data);
+    }
+  }
+  function updateFiche(id, patch, cb){
+    patch = Object.assign({}, patch);
+    if(sb){
+      var row = toFicheDbRow(patch);
+      row.updated_at = new Date().toISOString();
+      sb.from("fiche_reponses").update(row).eq("id", id).then(function(res){
+        if(res.error){
+          toast("Enregistrement impossible", res.error.message || "Réessayez dans un instant.", true);
+          if(cb) cb(false, res.error);
+          return;
+        }
+        fetchAllFiches();
+        if(cb) cb(true);
+      });
+    } else {
+      var it = LOCAL_FICHES_FALLBACK.find(function(x){ return x.id===id; });
+      if(it){ Object.assign(it, patch); it.updatedAt = new Date().toISOString(); state.fiches = LOCAL_FICHES_FALLBACK; render(); }
+      if(cb) cb(true);
+    }
   }
 
   /* ============================= DB LAYER (Affiches) ============================= */
@@ -1260,11 +1638,30 @@
     if(h.indexOf("#/affiches")===0) return "affiches";
     if(h.indexOf("#/media")===0) return "media";
     if(h.indexOf("#/dashboard")===0) return "dashboard";
+    if(h.indexOf("#/fiche/")===0) return "fiche";
     return "accueil";
   }
   function sessionIdFromHash(){
     var m = /^#\/sessions\/(.+)$/.exec(location.hash||"");
     return m ? decodeURIComponent(m[1]) : null;
+  }
+  // Fiches numériques : trois formes d'URL possibles (voir commentaire plus
+  // haut sur FICHE_SCOPE) —
+  //   #/fiche/s/<sessionId>/<roleKey>            (chooser, ou éditeur direct
+  //                                               si le rôle est "session"
+  //                                               unique, ex. Timekeeper)
+  //   #/fiche/s/<sessionId>/<roleKey>/<ficheId>  (éditeur d'une fiche précise,
+  //                                               rôles "par intervenant")
+  //   #/fiche/p/<propositionId>                  (fiche Mentor)
+  function ficheRouteInfo(){
+    var h = location.hash || "";
+    var m1 = /^#\/fiche\/s\/([^\/]+)\/([^\/]+)\/([^\/]+)$/.exec(h);
+    if(m1) return {kind:"session-editor", sessionId:decodeURIComponent(m1[1]), roleKey:decodeURIComponent(m1[2]), ficheId:decodeURIComponent(m1[3])};
+    var m2 = /^#\/fiche\/s\/([^\/]+)\/([^\/]+)$/.exec(h);
+    if(m2) return {kind:"session-role", sessionId:decodeURIComponent(m2[1]), roleKey:decodeURIComponent(m2[2])};
+    var m3 = /^#\/fiche\/p\/([^\/]+)$/.exec(h);
+    if(m3) return {kind:"proposition", propositionId:decodeURIComponent(m3[1])};
+    return null;
   }
   function navTo(hash){ location.hash = hash; }
 
@@ -1318,11 +1715,23 @@
     document.body.classList.remove("mobile-drawer-open");
   });
 
-  window.addEventListener("hashchange", render);
+  window.addEventListener("hashchange", function(){
+    // Un changement de route (bouton précédent/suivant, lien direct, etc.)
+    // rend obsolète le contenu de la modale de détail si elle était ouverte :
+    // on la ferme pour éviter qu'elle reste affichée par-dessus une autre page.
+    closeDetailModal();
+    render();
+  });
   document.addEventListener("click", function(e){
     var mnpItem = e.target.closest(".mnp-item");
     var t = e.target.closest("[data-nav]");
-    if(t){ navTo(t.getAttribute("data-nav")); }
+    if(t){
+      // Un data-nav cliqué depuis l'intérieur de la modale de détail (ex. le
+      // bouton "Remplir la fiche Mentor") doit d'abord fermer cette modale :
+      // sinon elle reste affichée par-dessus la page nouvellement ouverte.
+      if(t.closest("#detailModal")) closeDetailModal();
+      navTo(t.getAttribute("data-nav"));
+    }
     if(mnpItem){ closeMobileDrawer(); }
     var d = e.target.closest("[data-detail]");
     if(d){ openDetailModal(d.getAttribute("data-detail")); }
@@ -1330,6 +1739,8 @@
     if(p){ openPosterLightbox(p.getAttribute("data-poster")); }
     var med = e.target.closest("[data-media]");
     if(med){ openMediaLightbox(med.getAttribute("data-media")); }
+    var fav = e.target.closest("[data-fiche-admin-view]");
+    if(fav){ openFicheAdminViewModal(fav.getAttribute("data-fiche-admin-view")); }
     // Ferme la fenêtre de détail si on clique sur le fond sombre ou sur le
     // bouton de fermeture (mais pas sur son contenu, qui n'a pas cet attribut).
     if(e.target.id==="detailModal" || e.target.closest("[data-modal-close]")){ closeDetailModal(); }
@@ -1388,12 +1799,28 @@
           '</div>'+
           '<div class="detail-block"><h4>Description du sujet</h4><p>'+esc(it.description||"—")+'</p></div>'+
           '<div class="detail-block"><h4>Objectif de la présentation</h4><p>'+esc(it.objective||"—")+'</p></div>'+
+          (it.mentorName ? renderMentorFicheEntryPoint(it) : "")+
         '</div>'+
       '</div>';
     modal.hidden = false;
     document.body.classList.add("modal-open");
     var closeBtn = modal.querySelector(".modal-close");
     if(closeBtn) closeBtn.focus();
+  }
+
+  // Point d'entrée de la fiche Mentor : directement depuis le détail de la
+  // proposition (aucun lien formel entre "sessions" et "propositions" dans
+  // cette app — voir README — donc la fiche Mentor se rattache à la
+  // proposition elle-même, pas à une session).
+  function renderMentorFicheEntryPoint(it){
+    var existing = ficheForProposition(it.id, "mentor");
+    var st = existing ? ficheStatusById(existing.status) : null;
+    return '<div class="detail-block">'+
+      '<h4>Fiche Mentor</h4>'+
+      '<p style="margin-bottom:10px">'+(existing ? "Une fiche d'accompagnement existe déjà pour ce mentorat." : "Le mentor "+esc(it.mentorName)+" peut renseigner ici sa fiche d'accompagnement pour ce mentorat.")+'</p>'+
+      (st ? '<span class="pill '+st.pill+'" style="margin-bottom:10px;display:inline-block">'+esc(st.label)+'</span><br>' : '')+
+      '<button type="button" class="btn btn-outline-navy btn-sm" data-nav="#/fiche/p/'+esc(it.id)+'">'+ICONS.file+' '+(existing?"Voir / continuer la fiche Mentor":"Remplir la fiche Mentor")+'</button>'+
+    '</div>';
   }
 
   function closeDetailModal(){
@@ -1576,7 +2003,8 @@
     else if(route==="affiches") view.innerHTML = renderAffichesGallery();
     else if(route==="media") view.innerHTML = renderMediaGallery();
     else if(route==="dashboard") view.innerHTML = renderDashboard();
-    var routeKey = route + (route==="sessions" ? ":"+(sessionIdFromHash()||"") : "");
+    else if(route==="fiche") view.innerHTML = renderFicheRoute();
+    var routeKey = route + (route==="sessions" ? ":"+(sessionIdFromHash()||"") : "") + (route==="fiche" ? ":"+location.hash : "");
     if(routeKey !== lastRenderedRouteKey){
       window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
     }
@@ -2059,8 +2487,116 @@
       '<div class="roles-list">'+
         SESSION_ROLES.map(function(r){ return renderRoleRow(s, r, roles); }).join("")+
       '</div>'+
+      renderMesMissions(s, roles)+
+      (state.adminUnlocked ? renderFicheAdminSection(s) : "")+
       renderSessionPosterBlock(s)+
     '</section>';
+  }
+
+  /* ============================= MES MISSIONS (fiches numériques) ============================= */
+  // Sans compte (comme tout le reste de l'app) : la personne indique son nom,
+  // on le compare aux noms déjà assignés dans les rôles de CETTE session, et
+  // on affiche uniquement les rôles — parmi ceux qui ont une fiche numérique —
+  // qui lui sont attribués.
+  function renderMesMissions(s, roles){
+    var myName = state.myNameDraft!==null ? state.myNameDraft : getMyName();
+    var trimmed = (myName||"").trim();
+    var namesInSession = [];
+    SESSION_ROLES.forEach(function(r){ (roles[r.id]||[]).forEach(function(n){ if(namesInSession.indexOf(n)===-1) namesInSession.push(n); }); });
+
+    var matchedRoles = [];
+    if(trimmed){
+      SESSION_ROLES.forEach(function(r){
+        var unlocks = FICHE_UNLOCKS_BY_SESSION_ROLE[r.id];
+        if(!unlocks) return;
+        var people = roles[r.id]||[];
+        var mine = people.some(function(n){ return normalizeName(n)===normalizeName(trimmed); });
+        if(mine){ unlocks.forEach(function(fk){ matchedRoles.push({ficheRole:fk, sessionRoleLabel:r.label}); }); }
+      });
+    }
+
+    return '<div class="section-head" style="margin:30px 0 16px">'+
+        '<span class="kicker">Mes missions</span>'+
+        '<h3 style="margin:0;font-size:18px">Remplir ma fiche</h3>'+
+      '</div>'+
+      '<div class="form-card mission-card">'+
+        '<div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">'+
+          '<div class="field" style="max-width:300px;margin-bottom:0">'+
+            '<label for="myNameInput">Votre nom</label>'+
+            '<input type="text" id="myNameInput" list="sessionNamesList" placeholder="Nom et prénom" value="'+esc(myName)+'" autocomplete="off">'+
+            '<datalist id="sessionNamesList">'+namesInSession.map(function(n){ return '<option value="'+esc(n)+'">'; }).join("")+'</datalist>'+
+          '</div>'+
+          '<button type="button" class="btn btn-outline-navy btn-sm" id="btnSeeMissions">Voir mes missions</button>'+
+        '</div>'+
+        (trimmed ?
+          (matchedRoles.length ?
+            '<div class="mission-chips">'+
+              matchedRoles.map(function(m){
+                return '<button type="button" class="mission-chip" data-mission-open="'+esc(m.ficheRole)+'">'+ICONS.file+' '+esc(FICHE_TEMPLATES[m.ficheRole].label)+'</button>';
+              }).join("")+
+            '</div>'
+            : '<p style="margin-top:14px;font-size:13px">Aucun rôle avec fiche numérique n\'est assigné à ce nom pour cette session. Vérifiez l\'orthographe, ou demandez à être ajouté(e) à un rôle ci-dessus.</p>')
+          : '<p style="margin-top:14px;font-size:13px;color:var(--text-soft)">Indiquez votre nom pour retrouver vos fiches à remplir (Grammarian, Timekeeper, Posture Visualizer, Évaluateur…) pour cette session.</p>')+
+      '</div>';
+  }
+
+  /* ============================= FICHES — VUE ADMINISTRATEUR (par session) ============================= */
+  function renderFicheAdminSection(s){
+    var list = fichesForSessionAdmin(s.id);
+    return '<div class="section-head" style="margin:30px 0 16px">'+
+        '<span class="kicker">Administration</span>'+
+        '<h3 style="margin:0;font-size:18px">Fiches de la session</h3>'+
+      '</div>'+
+      (list.length ?
+        '<div class="table-wrap">'+
+          '<table><thead><tr><th>Participant</th><th>Rôle</th><th>Intervenant(e)</th><th>Statut</th><th>Dernière modification</th><th></th></tr></thead><tbody>'+
+            list.map(function(f){
+              var tpl = FICHE_TEMPLATES[f.roleKey];
+              var st = ficheStatusById(f.status);
+              return '<tr>'+
+                '<td>'+esc(f.participantName||"—")+'</td>'+
+                '<td>'+esc(tpl?tpl.label:f.roleKey)+'</td>'+
+                '<td>'+esc(f.intervenantName||"—")+'</td>'+
+                '<td><span class="pill '+st.pill+'">'+esc(st.label)+'</span></td>'+
+                '<td class="cell-sub">'+fmtDateTimeShort(f.updatedAt||f.createdAt)+'</td>'+
+                '<td><button type="button" class="btn btn-ghost btn-sm" data-fiche-admin-view="'+esc(f.id)+'">'+ICONS.eye+' Consulter</button></td>'+
+              '</tr>';
+            }).join("")+
+          '</tbody></table>'+
+        '</div>'
+        : '<div class="empty-state">'+ICONS.empty+'<div>Aucune fiche remplie pour cette session pour le moment.</div></div>')+
+    '';
+  }
+
+  // Modale de lecture seule (administrateur) : mêmes champs que l'éditeur,
+  // mais sans possibilité de modification — pratique aussi pour retrouver les
+  // fiches d'anciennes sessions (archives).
+  function openFicheAdminViewModal(id){
+    var f = ficheById(id);
+    if(!f) return;
+    var tpl = FICHE_TEMPLATES[f.roleKey];
+    if(!tpl) return;
+    var st = ficheStatusById(f.status);
+    var modal = document.getElementById("detailModal");
+    modal.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true" aria-label="Fiche '+esc(tpl.label)+'" style="max-width:760px">'+
+        '<div class="modal-head">'+
+          '<div>'+
+            '<span class="theme-tag">'+ICONS.file+' '+esc(tpl.label)+'</span>'+
+            '<h3 class="modal-title">'+esc(f.participantName||"—")+(f.intervenantName?' → '+esc(f.intervenantName):'')+'</h3>'+
+          '</div>'+
+          '<button type="button" class="modal-close" data-modal-close aria-label="Fermer">'+ICONS.close+'</button>'+
+        '</div>'+
+        '<div class="modal-body">'+
+          '<div class="card-foot" style="border-top:none;padding-top:0;margin-top:14px">'+
+            '<span class="pill '+st.pill+'">'+esc(st.label)+'</span>'+
+            '<span style="font-size:12.5px;color:var(--text-soft)">Dernière modification '+fmtDateTimeShort(f.updatedAt||f.createdAt)+'</span>'+
+          '</div>'+
+          '<fieldset disabled>'+renderFicheFields(tpl, f.formData||{})+'</fieldset>'+
+        '</div>'+
+      '</div>';
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
   }
 
   function renderSessionPosterBlock(s){
@@ -2096,6 +2632,459 @@
         )+
       '</div>'+
     '</div>';
+  }
+
+  /* ============================= FICHES — MOTEUR DE FORMULAIRE GÉNÉRIQUE ============================= */
+  // Un seul moteur (lecture ET écriture) pilote les 5 fiches à partir de
+  // FICHE_TEMPLATES : pas de HTML dédié par fiche, seulement des types de
+  // champ réutilisables (voir commentaire au-dessus de FICHE_TEMPLATES).
+  function cloneJson(o){ return JSON.parse(JSON.stringify(o||{})); }
+
+  function renderFicheFields(tpl, formData){
+    var html = "";
+    if(tpl.intro){
+      html += '<div class="fiche-intro">'+tpl.intro.map(function(block){
+        var inner = '<h5>'+esc(block.h)+'</h5>';
+        if(block.p) inner += '<p>'+esc(block.p)+'</p>';
+        if(block.ul) inner += '<ul>'+block.ul.map(function(li){ return '<li>'+esc(li)+'</li>'; }).join("")+'</ul>';
+        if(block.table) inner += '<table class="mini-info-table"><tbody>'+block.table.map(function(row){ return '<tr><td>'+row[0]+'</td><td>'+esc(row[1])+'</td></tr>'; }).join("")+'</tbody></table>';
+        return '<div class="fiche-intro-block">'+inner+'</div>';
+      }).join("")+'</div>';
+    }
+    tpl.sections.forEach(function(sec){
+      html += '<div class="fiche-section"><h4>'+esc(sec.title)+'</h4>'+
+        sec.fields.map(function(f){ return renderFicheField(f, formData); }).join("")+
+      '</div>';
+    });
+    return html;
+  }
+
+  function renderFicheField(f, formData){
+    var val = formData[f.key];
+    if(f.type==="text"){
+      return '<div class="field"><label>'+esc(f.label||"")+'</label><input type="text" data-fk="'+f.key+'" placeholder="'+esc(f.placeholder||"")+'" value="'+esc(val||"")+'"></div>';
+    }
+    if(f.type==="textarea"){
+      return '<div class="field">'+(f.label?'<label>'+esc(f.label)+'</label>':'')+'<textarea data-fk="'+f.key+'" rows="'+(f.rows||3)+'">'+esc(val||"")+'</textarea></div>';
+    }
+    if(f.type==="radio"){
+      return '<div class="field">'+(f.label?'<label>'+esc(f.label)+'</label>':'')+
+        '<div class="radio-row">'+f.options.map(function(o){
+          return '<label class="radio-opt"><input type="radio" name="fk_'+f.key+'" data-fk-radio="'+f.key+'" value="'+o.value+'"'+(val===o.value?" checked":"")+'> '+esc(o.label)+'</label>';
+        }).join("")+'</div></div>';
+    }
+    if(f.type==="checkbox_group"){
+      var selected = Array.isArray(val) ? val : [];
+      var otherVal = formData[f.otherKey]||"";
+      return '<div class="field"><div class="checkbox-row">'+
+        f.options.map(function(o){
+          return '<label class="chk-opt"><input type="checkbox" data-fk-check="'+f.key+'" value="'+o.value+'"'+(selected.indexOf(o.value)>-1?" checked":"")+'> '+esc(o.label)+'</label>';
+        }).join("")+
+        (f.allowOther ? '<label class="chk-opt chk-opt-other">Autre <input type="text" data-fk="'+f.otherKey+'" value="'+esc(otherVal)+'"></label>' : '')+
+        '</div></div>';
+    }
+    if(f.type==="notes_table"){
+      var rowsVal = val||{};
+      return '<div class="field"><div class="table-wrap"><table class="fiche-table"><thead><tr><th>Élément observé</th><th>'+esc(f.noteLabel||"Notes")+'</th></tr></thead><tbody>'+
+        f.rows.map(function(r){
+          var rv = rowsVal[r.key]||"";
+          return '<tr><td class="fiche-row-label">'+esc(r.label)+'</td><td><textarea data-fk-table="'+f.key+'" data-row="'+r.key+'" rows="2">'+esc(rv)+'</textarea></td></tr>';
+        }).join("")+'</tbody></table></div></div>';
+    }
+    if(f.type==="checklist_table"){
+      var rowsVal2 = val||{};
+      return '<div class="field"><div class="table-wrap"><table class="fiche-table"><thead><tr><th>Critère</th><th class="chk-col">✓</th><th>Observations</th></tr></thead><tbody>'+
+        f.rows.map(function(r){
+          var rv = rowsVal2[r.key]||{};
+          return '<tr><td class="fiche-row-label">'+esc(r.label)+'</td>'+
+            '<td class="chk-cell"><input type="checkbox" data-fk-table-check="'+f.key+'" data-row="'+r.key+'"'+(rv.checked?" checked":"")+'></td>'+
+            '<td><input type="text" data-fk-table-obs="'+f.key+'" data-row="'+r.key+'" value="'+esc(rv.observation||"")+'"></td></tr>';
+        }).join("")+'</tbody></table></div></div>';
+    }
+    if(f.type==="rating_table"){
+      var rowsVal3 = val||{};
+      return '<div class="field"><div class="table-wrap"><table class="fiche-table"><thead><tr><th>Critère</th>'+
+        f.options.map(function(o){ return '<th class="chk-col">'+esc(o.label)+'</th>'; }).join("")+
+        '<th>Observation</th></tr></thead><tbody>'+
+        f.rows.map(function(r){
+          var rv = rowsVal3[r.key]||{};
+          return '<tr><td class="fiche-row-label">'+esc(r.label)+'</td>'+
+            f.options.map(function(o){
+              return '<td class="chk-cell"><input type="radio" name="fk_'+f.key+'_'+r.key+'" data-fk-table-radio="'+f.key+'" data-row="'+r.key+'" value="'+o.value+'"'+(rv.rating===o.value?" checked":"")+'></td>';
+            }).join("")+
+            '<td><input type="text" data-fk-table-obs="'+f.key+'" data-row="'+r.key+'" value="'+esc(rv.observation||"")+'"></td></tr>';
+        }).join("")+'</tbody></table></div></div>';
+    }
+    if(f.type==="repeatable_table"){
+      var rowsArr = Array.isArray(val) ? val.slice() : [];
+      while(rowsArr.length < (f.minRows||1)) rowsArr.push({});
+      return '<div class="field"><div class="table-wrap"><table class="fiche-table"><thead><tr>'+
+        f.columns.map(function(c){ return '<th>'+esc(c.label)+'</th>'; }).join("")+'<th></th></tr></thead>'+
+        '<tbody data-repeat-body="'+f.key+'">'+
+          rowsArr.map(function(row, idx){ return renderRepeatableRow(f, row, idx); }).join("")+
+        '</tbody></table></div>'+
+        '<button type="button" class="btn btn-ghost btn-sm" data-fiche-add-row="'+f.key+'" style="margin-top:8px">'+ICONS.plus+' '+(f.addLabel||"Ajouter une ligne")+'</button>'+
+        '</div>';
+    }
+    return "";
+  }
+
+  function renderRepeatableRow(f, row, idx){
+    row = row || {};
+    return '<tr data-repeat-row="'+idx+'">'+
+      f.columns.map(function(c){
+        if(c.type==="radio"){
+          return '<td class="chk-cell">'+c.options.map(function(o){
+            return '<label class="radio-opt"><input type="radio" name="fk_'+f.key+'_'+idx+'_'+c.key+'" data-fk-rep-radio="'+c.key+'" value="'+o.value+'"'+(row[c.key]===o.value?" checked":"")+'> '+esc(o.label)+'</label>';
+          }).join(" ")+'</td>';
+        }
+        return '<td><input type="text" data-fk-rep="'+c.key+'" placeholder="'+esc(c.placeholder||"")+'" value="'+esc(row[c.key]||"")+'"></td>';
+      }).join("")+
+      '<td><button type="button" class="icon-btn" data-fiche-remove-row="'+idx+'" title="Retirer cette ligne">'+ICONS.close+'</button></td>'+
+    '</tr>';
+  }
+
+  // Relit le DOM du formulaire (plutôt qu'un FormData générique, pour gérer
+  // proprement les groupes de cases à cocher, tableaux et lignes répétables).
+  function serializeFicheForm(tpl, root){
+    var data = {};
+    function collectField(f){
+      if(f.type==="text" || f.type==="textarea"){
+        var el = root.querySelector('[data-fk="'+f.key+'"]');
+        data[f.key] = el ? el.value : "";
+      } else if(f.type==="radio"){
+        var checked = root.querySelector('[data-fk-radio="'+f.key+'"]:checked');
+        data[f.key] = checked ? checked.value : null;
+      } else if(f.type==="checkbox_group"){
+        var boxes = root.querySelectorAll('[data-fk-check="'+f.key+'"]:checked');
+        data[f.key] = Array.prototype.map.call(boxes, function(b){ return b.value; });
+        if(f.allowOther){
+          var oEl = root.querySelector('[data-fk="'+f.otherKey+'"]');
+          data[f.otherKey] = oEl ? oEl.value : "";
+        }
+      } else if(f.type==="notes_table"){
+        var obj = {};
+        f.rows.forEach(function(r){
+          var ta = root.querySelector('[data-fk-table="'+f.key+'"][data-row="'+r.key+'"]');
+          obj[r.key] = ta ? ta.value : "";
+        });
+        data[f.key] = obj;
+      } else if(f.type==="checklist_table"){
+        var obj2 = {};
+        f.rows.forEach(function(r){
+          var chk = root.querySelector('[data-fk-table-check="'+f.key+'"][data-row="'+r.key+'"]');
+          var obs = root.querySelector('[data-fk-table-obs="'+f.key+'"][data-row="'+r.key+'"]');
+          obj2[r.key] = { checked: chk ? chk.checked : false, observation: obs ? obs.value : "" };
+        });
+        data[f.key] = obj2;
+      } else if(f.type==="rating_table"){
+        var obj3 = {};
+        f.rows.forEach(function(r){
+          var checkedOpt = root.querySelector('[data-fk-table-radio="'+f.key+'"][data-row="'+r.key+'"]:checked');
+          var obs2 = root.querySelector('[data-fk-table-obs="'+f.key+'"][data-row="'+r.key+'"]');
+          obj3[r.key] = { rating: checkedOpt ? checkedOpt.value : null, observation: obs2 ? obs2.value : "" };
+        });
+        data[f.key] = obj3;
+      } else if(f.type==="repeatable_table"){
+        var body = root.querySelector('[data-repeat-body="'+f.key+'"]');
+        var rowsArr = [];
+        if(body){
+          Array.prototype.forEach.call(body.querySelectorAll("[data-repeat-row]"), function(tr){
+            var rowObj = {};
+            f.columns.forEach(function(c){
+              if(c.type==="radio"){
+                var rc = tr.querySelector('[data-fk-rep-radio="'+c.key+'"]:checked');
+                rowObj[c.key] = rc ? rc.value : null;
+              } else {
+                var inp = tr.querySelector('[data-fk-rep="'+c.key+'"]');
+                rowObj[c.key] = inp ? inp.value : "";
+              }
+            });
+            rowsArr.push(rowObj);
+          });
+        }
+        data[f.key] = rowsArr;
+      }
+    }
+    tpl.sections.forEach(function(sec){ sec.fields.forEach(collectField); });
+    return data;
+  }
+
+  function fieldFilled(f, val){
+    if(f.type==="text" || f.type==="textarea") return !!(val && String(val).trim());
+    if(f.type==="radio") return !!val;
+    if(f.type==="checkbox_group") return Array.isArray(val) && val.length>0;
+    if(f.type==="notes_table") return !!(val && Object.keys(val).some(function(k){ return (val[k]||"").trim(); }));
+    if(f.type==="checklist_table") return !!(val && Object.keys(val).some(function(k){ return val[k] && (val[k].checked || (val[k].observation||"").trim()); }));
+    if(f.type==="rating_table") return !!(val && Object.keys(val).some(function(k){ return val[k] && (val[k].rating || (val[k].observation||"").trim()); }));
+    if(f.type==="repeatable_table") return Array.isArray(val) && val.some(function(row){ return row && Object.keys(row).some(function(k){ return row[k]; }); });
+    return false;
+  }
+  function ficheProgress(tpl, formData){
+    var total=0, filled=0;
+    tpl.sections.forEach(function(sec){ sec.fields.forEach(function(f){ total++; if(fieldFilled(f, formData[f.key])) filled++; }); });
+    return total ? Math.round(filled/total*100) : 0;
+  }
+
+  /* ============================= FICHES — ROUTES & PAGES ============================= */
+  function renderFicheRoute(){
+    var info = ficheRouteInfo();
+    if(!info){
+      return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Fiche introuvable.</div></div></section>';
+    }
+    if(info.kind==="proposition"){
+      return renderMentorFicheEditor(info.propositionId);
+    }
+    var s = state.sessions.find(function(x){ return String(x.id)===String(info.sessionId); });
+    if(!s){
+      return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Cette session est introuvable.</div>'+
+        '<button type="button" class="btn btn-outline-navy" data-nav="#/sessions" style="margin-top:18px">← Retour aux sessions</button></div></section>';
+    }
+    var tpl = FICHE_TEMPLATES[info.roleKey];
+    if(!tpl){
+      return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Fiche inconnue.</div></div></section>';
+    }
+    if(info.kind==="session-editor"){
+      var fiche = ficheById(info.ficheId);
+      if(!fiche){
+        return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Cette fiche est introuvable ou a été supprimée.</div>'+
+          '<button type="button" class="btn btn-outline-navy" data-nav="#/fiche/s/'+esc(s.id)+'/'+esc(info.roleKey)+'" style="margin-top:18px">← Retour</button></div></section>';
+      }
+      return renderFicheEditorPage(s, tpl, fiche, null);
+    }
+    // info.kind === "session-role"
+    var myName = getMyName();
+    if(!myName){
+      return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Indiquez votre nom dans « Mes missions », sur la page de la session, pour accéder à votre fiche.</div>'+
+        '<button type="button" class="btn btn-outline-navy" data-nav="#/sessions/'+esc(s.id)+'" style="margin-top:18px">← Retour à la session</button></div></section>';
+    }
+    if(FICHE_SCOPE[info.roleKey]==="session"){
+      var existing = singleFicheFor(s.id, info.roleKey, myName);
+      var draft = existing || {id:null, sessionId:s.id, roleKey:info.roleKey, participantName:myName, intervenantName:null, status:"a_remplir", formData:{}};
+      return renderFicheEditorPage(s, tpl, draft, null);
+    }
+    return renderFicheChooser(s, info.roleKey, myName);
+  }
+
+  function renderFicheChooser(s, roleKey, myName){
+    var tpl = FICHE_TEMPLATES[roleKey];
+    var mine = fichesFor(s.id, roleKey, myName);
+    return '<section class="wrap">'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-nav="#/sessions/'+esc(s.id)+'" style="margin-bottom:18px;padding-left:0">← Retour à la session</button>'+
+      '<div class="section-head" style="margin-bottom:16px">'+
+        '<span class="kicker">'+esc(tpl.label)+'</span>'+
+        '<h2 style="margin-bottom:4px">Mes fiches '+esc(tpl.label)+'</h2>'+
+        '<p style="margin:0">Session '+esc(s.name||"")+' — '+esc(myName)+'</p>'+
+      '</div>'+
+      (mine.length ? '<div class="grid-cards" style="margin-bottom:24px">'+mine.map(function(f){
+        var st = ficheStatusById(f.status);
+        return '<div class="talk-card" data-nav="#/fiche/s/'+esc(s.id)+'/'+esc(roleKey)+'/'+esc(f.id)+'" role="button" tabindex="0">'+
+          '<div class="mc-top"><span class="pill '+st.pill+'">'+esc(st.label)+'</span></div>'+
+          '<h3 style="font-size:16px">'+esc(f.intervenantName||"Sans intervenant(e)")+'</h3>'+
+          '<div class="meta-row">Dernière modification '+fmtDateTimeShort(f.updatedAt||f.createdAt)+'</div>'+
+        '</div>';
+      }).join("")+'</div>' : '<div class="empty-state" style="margin-bottom:24px">'+ICONS.empty+'<div>Aucune fiche pour le moment.</div></div>')+
+      '<div class="form-card" style="max-width:460px">'+
+        '<div class="field"><label for="newIntervenantInput">Nouvelle fiche pour :</label>'+
+          '<input type="text" id="newIntervenantInput" placeholder="Nom de l\'intervenant(e)" value="'+esc(state.ficheNewIntervenant||"")+'"></div>'+
+        '<button type="button" class="btn btn-primary btn-sm" id="btnCreateFiche">'+ICONS.plus+' Créer la fiche</button>'+
+      '</div>'+
+    '</section>';
+  }
+
+  function renderMentorFicheEditor(propositionId){
+    var it = state.items.find(function(x){ return String(x.id)===String(propositionId); });
+    if(!it){
+      return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Cette proposition est introuvable.</div>'+
+        '<button type="button" class="btn btn-outline-navy" data-nav="#/presentateurs" style="margin-top:18px">← Retour aux présentateurs</button></div></section>';
+    }
+    var tpl = FICHE_TEMPLATES.mentor;
+    var existing = ficheForProposition(it.id, "mentor");
+    var draft = existing || {id:null, propositionId:it.id, roleKey:"mentor", participantName:it.mentorName||"", intervenantName:it.presenterName||"", status:"a_remplir", formData:{}};
+    return renderFicheEditorPage(null, tpl, draft, it);
+  }
+
+  function backHashFor(fiche){
+    if(fiche.propositionId) return "#/presentateurs";
+    if(FICHE_SCOPE[fiche.roleKey]==="session_intervenant") return "#/fiche/s/"+encodeURIComponent(fiche.sessionId)+"/"+encodeURIComponent(fiche.roleKey);
+    return "#/sessions/"+encodeURIComponent(fiche.sessionId);
+  }
+
+  function renderFicheEditorPage(s, tpl, fiche, proposition){
+    var draftKey = fiche.id || ("new:"+(fiche.sessionId||fiche.propositionId)+":"+fiche.roleKey+":"+(fiche.intervenantName||""));
+    var dataSource = (state.ficheDraft && state.ficheDraft.key===draftKey) ? state.ficheDraft.data : cloneJson(fiche.formData||{});
+    state.ficheDraft = { key: draftKey, fiche: fiche, data: dataSource, tpl: tpl, session: s, proposition: proposition };
+
+    var progress = ficheProgress(tpl, dataSource);
+    var st = ficheStatusById(fiche.status||"a_remplir");
+    var locked = fiche.status==="termine";
+
+    var metaItems = [];
+    if(s) metaItems.push(["Session", esc(s.name||"—")+' <span class="dt-value-sub">('+fmtSessionDateTime(s.sessionDatetime)+')</span>']);
+    if(proposition) metaItems.push(["Proposition", esc(proposition.title||"—")]);
+    metaItems.push([tpl.label, esc(fiche.participantName||"—")]);
+    if(fiche.roleKey==="mentor") metaItems.push(["Présentateur / Présentatrice", esc(fiche.intervenantName||"—")]);
+    else if(FICHE_SCOPE[fiche.roleKey]==="session_intervenant") metaItems.push(["Intervenant(e)", esc(fiche.intervenantName||"—")]);
+
+    return '<section class="wrap fiche-editor-page">'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-nav="'+esc(backHashFor(fiche))+'" style="margin-bottom:18px;padding-left:0">← Retour</button>'+
+      '<div class="toolbar" style="margin-bottom:18px;align-items:flex-start">'+
+        '<div class="section-head" style="margin:0">'+
+          '<span class="kicker">'+esc(tpl.label)+'</span>'+
+          '<h2 style="margin-bottom:4px">'+esc(tpl.subtitle||tpl.label)+'</h2>'+
+        '</div>'+
+        '<span class="pill '+st.pill+'" style="margin-top:4px">'+esc(st.label)+'</span>'+
+      '</div>'+
+      '<div class="form-card" style="margin-bottom:22px">'+
+        '<div class="detail-grid">'+
+          metaItems.map(function(m){ return '<div class="detail-item"><span class="dt-label">'+esc(m[0])+'</span><span class="dt-value">'+m[1]+'</span></div>'; }).join("")+
+        '</div>'+
+      '</div>'+
+      '<div class="fiche-progress-wrap">'+
+        '<div class="fiche-progress-bar"><div class="fiche-progress-fill" style="width:'+progress+'%"></div></div>'+
+        '<span class="fiche-progress-label">'+progress+'% complété'+(fiche.updatedAt||fiche.createdAt ? ' · Dernière sauvegarde '+fmtDateTimeShort(fiche.updatedAt||fiche.createdAt) : '')+'</span>'+
+      '</div>'+
+      '<form id="ficheFormRoot"'+(locked?' data-locked="1"':'')+'>'+
+        '<fieldset'+(locked?' disabled':'')+' style="border:none;padding:0;margin:0">'+
+          renderFicheFields(tpl, dataSource)+
+        '</fieldset>'+
+      '</form>'+
+      (locked ?
+        '<div class="fiche-locked-note">'+ICONS.check+' Cette fiche a été validée et envoyée'+(fiche.submittedAt ? ' le '+fmtDateTimeShort(fiche.submittedAt) : '')+'. Elle n\'est plus modifiable.</div>'
+        :
+        '<div class="fiche-actions">'+
+          '<button type="button" class="btn btn-outline-navy" id="btnFicheSaveLater">Enregistrer et continuer plus tard</button>'+
+          '<button type="button" class="btn btn-secondary" id="btnFicheSave">Enregistrer</button>'+
+          '<button type="button" class="btn btn-primary" id="btnFicheValidate">'+ICONS.check+' Valider ma fiche</button>'+
+        '</div>')+
+    '</section>';
+  }
+
+  /* ============================= FICHES — SAUVEGARDE & ÉVÉNEMENTS ============================= */
+  function saveFicheDraft(status, thenNavigateBack){
+    var d = state.ficheDraft;
+    if(!d) return;
+    var root = document.getElementById("ficheFormRoot");
+    if(!root) return;
+    var formData = serializeFicheForm(d.tpl, root);
+    d.data = formData;
+
+    function afterSaved(mergedFiche){
+      d.fiche = mergedFiche;
+      toast(status==="termine" ? "Fiche validée" : "Fiche enregistrée", "");
+      if(thenNavigateBack) navTo(backHashFor(mergedFiche));
+      else render();
+    }
+
+    if(d.fiche.id){
+      var payload = { formData: formData };
+      payload.status = status || (d.fiche.status==="termine" ? "termine" : "en_cours");
+      if(payload.status==="termine" && !d.fiche.submittedAt) payload.submittedAt = new Date().toISOString();
+      updateFiche(d.fiche.id, payload, function(success){
+        if(success){
+          afterSaved(Object.assign({}, d.fiche, payload, {updatedAt:new Date().toISOString()}));
+        }
+      });
+    } else {
+      var createPayload = {
+        sessionId: d.fiche.sessionId || null,
+        propositionId: d.fiche.propositionId || null,
+        roleKey: d.fiche.roleKey,
+        participantName: d.fiche.participantName,
+        intervenantName: d.fiche.intervenantName || null,
+        status: status || "en_cours",
+        formData: formData
+      };
+      if(createPayload.status==="termine") createPayload.submittedAt = new Date().toISOString();
+      createFiche(createPayload, function(success, err, created){
+        if(!success || !created) return;
+        if(FICHE_SCOPE[created.roleKey]==="session_intervenant"){
+          // Un identifiant existe désormais : on bascule vers l'URL définitive.
+          d.key = created.id;
+          d.fiche = created;
+          toast(status==="termine" ? "Fiche validée" : "Fiche enregistrée", "");
+          if(thenNavigateBack) navTo(backHashFor(created));
+          else navTo("#/fiche/s/"+encodeURIComponent(created.sessionId)+"/"+encodeURIComponent(created.roleKey)+"/"+encodeURIComponent(created.id));
+          return;
+        }
+        afterSaved(created);
+      });
+    }
+  }
+
+  function bindFicheRouteEvents(){
+    // Chooser (fiches "par intervenant") : création d'une nouvelle fiche.
+    var newIntervenantInput = document.getElementById("newIntervenantInput");
+    if(newIntervenantInput){
+      newIntervenantInput.addEventListener("input", function(){ state.ficheNewIntervenant = newIntervenantInput.value; });
+    }
+    var btnCreateFiche = document.getElementById("btnCreateFiche");
+    if(btnCreateFiche){
+      btnCreateFiche.addEventListener("click", function(){
+        var info = ficheRouteInfo();
+        if(!info || info.kind!=="session-role") return;
+        var name = (newIntervenantInput ? newIntervenantInput.value : "").trim();
+        if(!name){ toast("Nom requis", "Indiquez le nom de l'intervenant(e) observé(e).", true); return; }
+        var myName = getMyName();
+        btnCreateFiche.disabled = true;
+        createFiche({
+          sessionId: info.sessionId, roleKey: info.roleKey, participantName: myName,
+          intervenantName: name, status:"a_remplir", formData:{}
+        }, function(success, err, created){
+          btnCreateFiche.disabled = false;
+          if(success && created){
+            state.ficheNewIntervenant = "";
+            navTo("#/fiche/s/"+encodeURIComponent(info.sessionId)+"/"+encodeURIComponent(info.roleKey)+"/"+encodeURIComponent(created.id));
+          } else {
+            toast("Création impossible", (err && err.message) || "Réessayez.", true);
+          }
+        });
+      });
+    }
+
+    // Éditeur : ajout / retrait de ligne dans un tableau répétable.
+    document.querySelectorAll("[data-fiche-add-row]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var key = btn.getAttribute("data-fiche-add-row");
+        var root = document.getElementById("ficheFormRoot");
+        var d = state.ficheDraft;
+        if(!root || !d) return;
+        var current = serializeFicheForm(d.tpl, root);
+        var arr = Array.isArray(current[key]) ? current[key] : [];
+        arr.push({});
+        current[key] = arr;
+        d.data = current;
+        render();
+      });
+    });
+    document.querySelectorAll("[data-fiche-remove-row]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var tr = btn.closest("[data-repeat-row]");
+        var tbody = tr ? tr.closest("[data-repeat-body]") : null;
+        var key = tbody ? tbody.getAttribute("data-repeat-body") : null;
+        var idx = tr ? parseInt(tr.getAttribute("data-repeat-row"),10) : -1;
+        var root = document.getElementById("ficheFormRoot");
+        var d = state.ficheDraft;
+        if(!root || !d || !key || idx<0) return;
+        var current = serializeFicheForm(d.tpl, root);
+        var arr = Array.isArray(current[key]) ? current[key] : [];
+        arr.splice(idx,1);
+        current[key] = arr;
+        d.data = current;
+        render();
+      });
+    });
+
+    // Éditeur : actions de sauvegarde / validation.
+    var btnSave = document.getElementById("btnFicheSave");
+    if(btnSave) btnSave.addEventListener("click", function(){ saveFicheDraft(null, false); });
+    var btnSaveLater = document.getElementById("btnFicheSaveLater");
+    if(btnSaveLater) btnSaveLater.addEventListener("click", function(){ saveFicheDraft(null, true); });
+    var btnValidate = document.getElementById("btnFicheValidate");
+    if(btnValidate) btnValidate.addEventListener("click", function(){
+      if(!window.confirm("Valider définitivement cette fiche ? Elle ne sera plus modifiable ensuite.")) return;
+      saveFicheDraft("termine", true);
+    });
   }
 
   function openSessionFormModal(id){
@@ -2200,6 +3189,27 @@
   function bindSessionDetailEvents(id){
     var editBtn = document.getElementById("btnEditSession");
     if(editBtn) editBtn.addEventListener("click", function(){ openSessionFormModal(id); });
+
+    // ---- Mes missions (fiches numériques) ----
+    var myNameInput = document.getElementById("myNameInput");
+    if(myNameInput){
+      myNameInput.addEventListener("input", function(){ state.myNameDraft = myNameInput.value; });
+    }
+    var btnSeeMissions = document.getElementById("btnSeeMissions");
+    if(btnSeeMissions){
+      btnSeeMissions.addEventListener("click", function(){
+        var v = (myNameInput ? myNameInput.value : "").trim();
+        state.myNameDraft = v;
+        setMyName(v);
+        render();
+      });
+    }
+    document.querySelectorAll("[data-mission-open]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var ficheRole = btn.getAttribute("data-mission-open");
+        navTo("#/fiche/s/"+encodeURIComponent(id)+"/"+encodeURIComponent(ficheRole));
+      });
+    });
 
     document.querySelectorAll(".btn-delete-session").forEach(function(btn){
       btn.addEventListener("click", function(){
@@ -2318,9 +3328,10 @@
     }
 
     var tabsHtml = '<div class="dash-tabs">'+
-      '<button type="button" class="dash-tab'+(state.dashTab!=="affiches" && state.dashTab!=="medias"?" active":"")+'" data-dash-tab="propositions">Propositions</button>'+
+      '<button type="button" class="dash-tab'+(state.dashTab!=="affiches" && state.dashTab!=="medias" && state.dashTab!=="fiches"?" active":"")+'" data-dash-tab="propositions">Propositions</button>'+
       '<button type="button" class="dash-tab'+(state.dashTab==="affiches"?" active":"")+'" data-dash-tab="affiches">Affiches</button>'+
       '<button type="button" class="dash-tab'+(state.dashTab==="medias"?" active":"")+'" data-dash-tab="medias">Médias</button>'+
+      '<button type="button" class="dash-tab'+(state.dashTab==="fiches"?" active":"")+'" data-dash-tab="fiches">Fiches</button>'+
     '</div>';
 
     if(state.dashTab === "affiches"){
@@ -2328,6 +3339,9 @@
     }
     if(state.dashTab === "medias"){
       return '<section class="wrap">'+tabsHtml+renderDashboardMedias()+'</section>';
+    }
+    if(state.dashTab === "fiches"){
+      return '<section class="wrap">'+tabsHtml+renderDashboardFiches()+'</section>';
     }
 
     var total = state.items.length;
@@ -2526,6 +3540,7 @@
 
     if(state.dashTab === "affiches"){ bindDashboardAffichesEvents(); return; }
     if(state.dashTab === "medias"){ bindDashboardMediasEvents(); return; }
+    if(state.dashTab === "fiches"){ bindDashboardFichesEvents(); return; }
 
     var dt = document.getElementById("dashThemeFilter");
     if(dt){
@@ -2799,6 +3814,75 @@
     bindMediaRowEvents();
   }
 
+  /* ---------- Fiches (Dashboard) — vue transversale + archives ---------- */
+  // Sert aussi d'"archives" (voir demande) : en choisissant une session
+  // passée dans le filtre, on retrouve toutes ses fiches (Grammarian,
+  // Timekeeper...) quel que soit leur statut.
+  function renderDashboardFiches(){
+    var sessOptions = sessionsSorted().slice().reverse();
+    var filter = state.ficheAdminFilterSession;
+    var list = state.fiches.filter(function(f){
+      if(filter==="mentor") return !!f.propositionId;
+      if(filter) return String(f.sessionId)===String(filter);
+      return true;
+    }).sort(function(a,b){ return (b.updatedAt||b.createdAt||"").localeCompare(a.updatedAt||a.createdAt||""); });
+
+    function sourceLabel(f){
+      if(f.propositionId){
+        var p = state.items.find(function(x){ return String(x.id)===String(f.propositionId); });
+        return p ? ("Proposition — "+p.title) : "Proposition";
+      }
+      var s = state.sessions.find(function(x){ return String(x.id)===String(f.sessionId); });
+      return s ? (s.name||("Session #"+(s.sessionNumber||"—"))) : "—";
+    }
+
+    return '<div class="toolbar" style="margin-bottom:22px">'+
+        '<div class="section-head" style="margin:0">'+
+          '<span class="kicker">Administration</span>'+
+          '<h2 style="margin-bottom:0">Fiches</h2>'+
+        '</div>'+
+      '</div>'+
+      '<div class="toolbar">'+
+        '<div class="filters">'+
+          '<select class="field-select" id="ficheAdminSessionFilter">'+
+            '<option value="">Toutes les sessions</option>'+
+            '<option value="mentor"'+(filter==="mentor"?" selected":"")+'>Fiches Mentor (par proposition)</option>'+
+            sessOptions.map(function(s){ return '<option value="'+esc(s.id)+'"'+(filter===String(s.id)?" selected":"")+'>'+esc(s.name||("Session #"+(s.sessionNumber||"—")))+'</option>'; }).join("")+
+          '</select>'+
+        '</div>'+
+        '<div style="font-size:12.5px;color:var(--text-soft)">Astuce : choisissez une session passée pour retrouver ses fiches (archives)</div>'+
+      '</div>'+
+      (list.length ?
+        '<div class="table-wrap">'+
+          '<table><thead><tr><th>Session / Proposition</th><th>Participant</th><th>Rôle</th><th>Intervenant(e)</th><th>Statut</th><th>Dernière modification</th><th></th></tr></thead><tbody>'+
+            list.map(function(f){
+              var tpl = FICHE_TEMPLATES[f.roleKey];
+              var st = ficheStatusById(f.status);
+              return '<tr>'+
+                '<td class="cell-sub">'+esc(sourceLabel(f))+'</td>'+
+                '<td>'+esc(f.participantName||"—")+'</td>'+
+                '<td>'+esc(tpl?tpl.label:f.roleKey)+'</td>'+
+                '<td>'+esc(f.intervenantName||"—")+'</td>'+
+                '<td><span class="pill '+st.pill+'">'+esc(st.label)+'</span></td>'+
+                '<td class="cell-sub">'+fmtDateTimeShort(f.updatedAt||f.createdAt)+'</td>'+
+                '<td><button type="button" class="btn btn-ghost btn-sm" data-fiche-admin-view="'+esc(f.id)+'">'+ICONS.eye+' Consulter</button></td>'+
+              '</tr>';
+            }).join("")+
+          '</tbody></table>'+
+        '</div>'
+        : '<div class="empty-state">'+ICONS.empty+'<div>Aucune fiche pour ce filtre.</div></div>');
+  }
+
+  function bindDashboardFichesEvents(){
+    var sel = document.getElementById("ficheAdminSessionFilter");
+    if(sel){
+      sel.addEventListener("change", function(){
+        state.ficheAdminFilterSession = sel.value;
+        render();
+      });
+    }
+  }
+
   function bindMediaRowEvents(){
     document.querySelectorAll(".btn-edit-media").forEach(function(btn){
       btn.addEventListener("click", function(){
@@ -2971,6 +4055,7 @@
     else if(route==="sessions") bindSessionsEvents();
     else if(route==="media") bindMediaEvents();
     else if(route==="dashboard") bindDashboardEvents();
+    else if(route==="fiche") bindFicheRouteEvents();
   }
 
   /* ============================= INIT ============================= */
