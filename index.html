@@ -1089,7 +1089,6 @@
     if(!out.formData) out.formData = {};
     return out;
   }
-  function normalizeName(n){ return (n||"").trim().toLowerCase(); }
 
   var sb = null;
 
@@ -1311,17 +1310,22 @@
   function ficheById(id){
     return state.fiches.find(function(f){ return String(f.id)===String(id); });
   }
-  // Fiches "session_intervenant" déjà existantes pour (session, rôle, nom) —
-  // une même personne peut en avoir plusieurs (une par intervenant(e) suivi(e)).
-  function fichesFor(sessionId, roleKey, participantName){
-    var nn = normalizeName(participantName);
+  // Toutes les fiches "session_intervenant" déjà existantes pour (session,
+  // rôle), quelle que soit la personne qui les a remplies — la porte d'entrée
+  // "Votre nom" sert seulement à attribuer une NOUVELLE fiche, jamais à
+  // filtrer ce qu'on peut voir : tout le monde voit toutes les fiches déjà
+  // remplies pour ce rôle dans cette session (sinon, taper un nom légèrement
+  // différent d'une fois sur l'autre faisait disparaître des fiches déjà
+  // remplies par d'autres).
+  function fichesForRole(sessionId, roleKey){
     return state.fiches.filter(function(f){
-      return f.roleKey===roleKey && String(f.sessionId)===String(sessionId) && normalizeName(f.participantName)===nn;
+      return f.roleKey===roleKey && String(f.sessionId)===String(sessionId);
     }).sort(function(a,b){ return (b.updatedAt||b.createdAt||"").localeCompare(a.updatedAt||a.createdAt||""); });
   }
-  // Fiche "session" unique (Timekeeper) pour (session, rôle, nom).
-  function singleFicheFor(sessionId, roleKey, participantName){
-    var list = fichesFor(sessionId, roleKey, participantName);
+  // Fiche "session" unique (Timekeeper) pour (session, rôle) — un seul
+  // exemplaire pour toute la session, peu importe qui l'a créé ou la continue.
+  function singleFicheForRole(sessionId, roleKey){
+    var list = fichesForRole(sessionId, roleKey);
     return list.length ? list[0] : null;
   }
   function ficheForProposition(propositionId, roleKey){
@@ -3070,7 +3074,7 @@
       return renderFicheNameGate(s, tpl);
     }
     if(FICHE_SCOPE[info.roleKey]==="session"){
-      var existing = singleFicheFor(s.id, info.roleKey, trimmed);
+      var existing = singleFicheForRole(s.id, info.roleKey);
       var draft = existing || {id:null, sessionId:s.id, roleKey:info.roleKey, participantName:trimmed, intervenantName:null, status:"a_remplir", formData:{}};
       return renderFicheEditorPage(s, tpl, draft, null);
     }
@@ -3099,19 +3103,23 @@
 
   function renderFicheChooser(s, roleKey, myName){
     var tpl = FICHE_TEMPLATES[roleKey];
-    var mine = fichesFor(s.id, roleKey, myName);
+    // Toutes les fiches de ce rôle pour cette session, remplies par n'importe
+    // qui (voir fichesForRole) : la porte d'entrée n'attribue que la
+    // PROCHAINE fiche à créer, elle ne filtre pas ce qu'on peut voir ici.
+    var list = fichesForRole(s.id, roleKey);
     return '<section class="wrap">'+
       '<button type="button" class="btn btn-ghost btn-sm" data-nav="#/sessions/'+esc(s.id)+'" style="margin-bottom:18px;padding-left:0">← Retour à la session</button>'+
       '<div class="section-head" style="margin-bottom:16px">'+
         '<span class="kicker">'+esc(tpl.label)+'</span>'+
-        '<h2 style="margin-bottom:4px">Mes fiches '+esc(tpl.label)+'</h2>'+
-        '<p style="margin:0">Session '+esc(s.name||"")+' — '+esc(myName)+'</p>'+
+        '<h2 style="margin-bottom:4px">Fiches '+esc(tpl.label)+'</h2>'+
+        '<p style="margin:0">Session '+esc(s.name||"")+' — toutes les fiches déjà remplies pour ce rôle. La prochaine sera attribuée à '+esc(myName)+'.</p>'+
       '</div>'+
-      (mine.length ? '<div class="grid-cards" style="margin-bottom:24px">'+mine.map(function(f){
+      (list.length ? '<div class="grid-cards" style="margin-bottom:24px">'+list.map(function(f){
         var st = ficheStatusById(f.status);
         return '<div class="talk-card" data-nav="#/fiche/s/'+esc(s.id)+'/'+esc(roleKey)+'/'+esc(f.id)+'" role="button" tabindex="0">'+
           '<div class="mc-top"><span class="pill '+st.pill+'">'+esc(st.label)+'</span></div>'+
           '<h3 style="font-size:16px">'+esc(f.intervenantName||"Sans intervenant(e)")+'</h3>'+
+          '<div class="meta-row">Rempli par '+esc(f.participantName||"—")+'</div>'+
           '<div class="meta-row">Dernière modification '+fmtDateTimeShort(f.updatedAt||f.createdAt)+'</div>'+
         '</div>';
       }).join("")+'</div>' : '<div class="empty-state" style="margin-bottom:24px">'+ICONS.empty+'<div>Aucune fiche pour le moment.</div></div>')+
