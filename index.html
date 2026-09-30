@@ -911,7 +911,6 @@
     dashTab: "propositions", /* onglet actif dans le Dashboard : "propositions", "affiches", "medias" ou "fiches" */
     mediaFilter: "tout", /* filtre actif sur la page publique Média : "tout", "photo" ou "video" */
     myNameDraft: null, /* texte en cours de saisie dans le champ "Votre nom" de Mes missions, tant qu'il n'a pas été validé (survit à un re-rendu pendant la frappe) */
-    ficheNewIntervenant: "", /* texte en cours de saisie dans le formulaire "nouvelle fiche pour un(e) intervenant(e)" */
     ficheAdminFilterSession: "", /* session choisie dans l'onglet Fiches du Dashboard (sert aussi d'archives) */
     ficheAdminView: null, /* id de la fiche actuellement ouverte en lecture seule par l'administrateur */
     confirmDeleteFiches: {},
@@ -3029,6 +3028,25 @@
       return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Fiche inconnue.</div></div></section>';
     }
     if(info.kind==="session-editor"){
+      if(info.ficheId==="new"){
+        // Nouvelle fiche vierge (bouton "+ Nouvelle fiche" du chooser) : plus
+        // d'étape intermédiaire demandant le nom de l'intervenant(e) — il/elle
+        // est désormais un champ de la fiche elle-même, rempli directement là
+        // où on remplit le reste de l'observation (voir demande). On garde
+        // seulement la porte d'entrée "Votre nom" (qui identifie qui remplit),
+        // redemandée ici aussi si elle n'a pas déjà été validée pour ce rôle
+        // (ex. arrivée directe par un lien, ou rechargement de la page).
+        var newFicheGateKey = info.sessionId+"::"+info.roleKey;
+        if(state.ficheGateConfirmedFor !== newFicheGateKey){
+          return renderFicheNameGate(s, tpl);
+        }
+        var freshName = (state.myNameDraft||"").trim();
+        if(!freshName){
+          return renderFicheNameGate(s, tpl);
+        }
+        var blankDraft = {id:null, sessionId:s.id, roleKey:info.roleKey, participantName:freshName, intervenantName:"", status:"a_remplir", formData:{}};
+        return renderFicheEditorPage(s, tpl, blankDraft, null);
+      }
       var fiche = ficheById(info.ficheId);
       if(!fiche){
         return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Cette fiche est introuvable ou a été supprimée.</div>'+
@@ -3097,10 +3115,8 @@
           '<div class="meta-row">Dernière modification '+fmtDateTimeShort(f.updatedAt||f.createdAt)+'</div>'+
         '</div>';
       }).join("")+'</div>' : '<div class="empty-state" style="margin-bottom:24px">'+ICONS.empty+'<div>Aucune fiche pour le moment.</div></div>')+
-      '<div class="form-card" style="max-width:460px">'+
-        '<div class="field"><label for="newIntervenantInput">Nouvelle fiche pour :</label>'+
-          '<input type="text" id="newIntervenantInput" placeholder="Nom de l\'intervenant(e)" value="'+esc(state.ficheNewIntervenant||"")+'"></div>'+
-        '<button type="button" class="btn btn-primary btn-sm" id="btnCreateFiche">'+ICONS.plus+' Créer la fiche</button>'+
+      '<div class="form-card" style="max-width:460px;text-align:center">'+
+        '<button type="button" class="btn btn-primary btn-sm" data-nav="#/fiche/s/'+esc(s.id)+'/'+esc(roleKey)+'/new">'+ICONS.plus+' Nouvelle fiche</button>'+
       '</div>'+
     '</section>';
   }
@@ -3160,12 +3176,18 @@
     var st = ficheStatusById(fiche.status||"a_remplir");
     var locked = fiche.status==="termine";
 
+    // Pour les rôles "session_intervenant" (Grammarian, Évaluateur, Posture
+    // Visualizer), l'intervenant(e) observé(e) n'est plus demandé en amont
+    // (ancien champ sur le chooser) : c'est un champ ordinaire de la fiche
+    // elle-même (voir needsIntervenantField plus bas), rempli en même temps
+    // que le reste de l'observation — donc pas de doublon dans ce bloc méta.
+    var needsIntervenantField = FICHE_SCOPE[fiche.roleKey]==="session_intervenant";
+
     var metaItems = [];
     if(s) metaItems.push(["Session", esc(s.name||"—")+' <span class="dt-value-sub">('+fmtSessionDateTime(s.sessionDatetime)+')</span>']);
     if(proposition) metaItems.push(["Proposition", esc(proposition.title||"—")]);
     metaItems.push([tpl.label, esc(fiche.participantName||"—")]);
     if(fiche.roleKey==="mentor") metaItems.push(["Présentateur / Présentatrice", esc(fiche.intervenantName||"—")]);
-    else if(FICHE_SCOPE[fiche.roleKey]==="session_intervenant") metaItems.push(["Intervenant(e)", esc(fiche.intervenantName||"—")]);
 
     return '<section class="wrap fiche-editor-page">'+
       '<button type="button" class="btn btn-ghost btn-sm" data-nav="'+esc(backHashFor(fiche))+'" style="margin-bottom:18px;padding-left:0">← Retour</button>'+
@@ -3187,6 +3209,12 @@
       '</div>'+
       '<form id="ficheFormRoot"'+(locked?' data-locked="1"':'')+'>'+
         '<fieldset'+(locked?' disabled':'')+' style="border:none;padding:0;margin:0">'+
+          (needsIntervenantField ?
+            '<div class="field" style="margin-bottom:22px;max-width:420px">'+
+              '<label for="ficheIntervenantInput">Intervenant(e) observé(e)</label>'+
+              '<input type="text" id="ficheIntervenantInput" placeholder="Nom et prénom" autocomplete="off" value="'+esc(fiche.intervenantName||"")+'">'+
+            '</div>'
+            : '')+
           renderFicheFields(tpl, dataSource)+
         '</fieldset>'+
       '</form>'+
@@ -3214,6 +3242,11 @@
     if(!root) return;
     var formData = serializeFicheForm(d.tpl, root);
     d.data = formData;
+    // Intervenant(e) observé(e) : champ ordinaire de la fiche (voir
+    // needsIntervenantField dans renderFicheEditorPage), pas dans formData —
+    // colonne dédiée "intervenant_name", comme avant.
+    var intervenantInput = document.getElementById("ficheIntervenantInput");
+    if(intervenantInput) d.fiche.intervenantName = intervenantInput.value.trim();
 
     function afterSaved(mergedFiche){
       d.fiche = mergedFiche;
@@ -3224,6 +3257,7 @@
 
     if(d.fiche.id){
       var payload = { formData: formData };
+      if(intervenantInput) payload.intervenantName = d.fiche.intervenantName;
       payload.status = status || (d.fiche.status==="termine" ? "termine" : "en_cours");
       if(payload.status==="termine" && !d.fiche.submittedAt) payload.submittedAt = new Date().toISOString();
       updateFiche(d.fiche.id, payload, function(success){
@@ -3258,6 +3292,18 @@
     }
   }
 
+  // À appeler juste avant tout render() déclenché depuis l'intérieur de
+  // l'éditeur de fiche (ajout/retrait de ligne, armement d'une suppression...)
+  // pour ne pas perdre ce qui est en cours de saisie dans le champ
+  // "Intervenant(e) observé(e)" (un render() régénère tout le HTML depuis
+  // state.ficheDraft.fiche, donc tout ce qui n'y est pas déjà recopié serait
+  // sinon effacé — même logique que pour serializeFicheForm côté formData).
+  function syncFicheIntervenantDraft(){
+    var d = state.ficheDraft;
+    var el = document.getElementById("ficheIntervenantInput");
+    if(d && el) d.fiche.intervenantName = el.value;
+  }
+
   function bindFicheRouteEvents(){
     // Porte d'entrée : on demande le nom seulement ici, au moment de
     // commencer à remplir un rôle (voir renderFicheNameGate).
@@ -3278,34 +3324,9 @@
       }
     }
 
-    // Chooser (fiches "par intervenant") : création d'une nouvelle fiche.
-    var newIntervenantInput = document.getElementById("newIntervenantInput");
-    if(newIntervenantInput){
-      newIntervenantInput.addEventListener("input", function(){ state.ficheNewIntervenant = newIntervenantInput.value; });
-    }
-    var btnCreateFiche = document.getElementById("btnCreateFiche");
-    if(btnCreateFiche){
-      btnCreateFiche.addEventListener("click", function(){
-        var info = ficheRouteInfo();
-        if(!info || info.kind!=="session-role") return;
-        var name = (newIntervenantInput ? newIntervenantInput.value : "").trim();
-        if(!name){ toast("Nom requis", "Indiquez le nom de l'intervenant(e) observé(e).", true); return; }
-        var myName = state.myNameDraft || "";
-        btnCreateFiche.disabled = true;
-        createFiche({
-          sessionId: info.sessionId, roleKey: info.roleKey, participantName: myName,
-          intervenantName: name, status:"a_remplir", formData:{}
-        }, function(success, err, created){
-          btnCreateFiche.disabled = false;
-          if(success && created){
-            state.ficheNewIntervenant = "";
-            navTo("#/fiche/s/"+encodeURIComponent(info.sessionId)+"/"+encodeURIComponent(info.roleKey)+"/"+encodeURIComponent(created.id));
-          } else {
-            toast("Création impossible", (err && err.message) || "Réessayez.", true);
-          }
-        });
-      });
-    }
+    // Le chooser n'a plus de champ "intervenant(e)" séparé : le bouton
+    // "+ Nouvelle fiche" est un simple data-nav vers .../new, géré par le
+    // délégué de clic global (voir renderFicheChooser et renderFicheRoute).
 
     // Éditeur : ajout / retrait de ligne dans un tableau répétable.
     document.querySelectorAll("[data-fiche-add-row]").forEach(function(btn){
@@ -3319,6 +3340,7 @@
         arr.push({});
         current[key] = arr;
         d.data = current;
+        syncFicheIntervenantDraft();
         render();
       });
     });
@@ -3336,6 +3358,7 @@
         arr.splice(idx,1);
         current[key] = arr;
         d.data = current;
+        syncFicheIntervenantDraft();
         render();
       });
     });
@@ -3363,6 +3386,7 @@
           // perdre au re-rendu déclenché par l'armement du bouton.
           var root = document.getElementById("ficheFormRoot");
           if(root && state.ficheDraft){ state.ficheDraft.data = serializeFicheForm(state.ficheDraft.tpl, root); }
+          syncFicheIntervenantDraft();
           var armedAt = Date.now() + 4000;
           state.confirmDeleteFiches[fid] = armedAt;
           render();
