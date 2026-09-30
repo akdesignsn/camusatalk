@@ -364,6 +364,10 @@
   .fiche-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:26px;padding-top:20px;border-top:1px solid var(--border)}
   .fiche-locked-note{display:flex;align-items:center;gap:8px;margin-top:26px;padding:16px 18px;background:var(--st-real-bg);color:var(--st-real-fg);border-radius:var(--radius-sm);font-size:13.5px;font-weight:600}
   .fiche-locked-note svg{width:18px;height:18px;flex-shrink:0}
+  .btn-delete-fiche-self{display:inline-flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--text-soft);padding:6px 4px;font-family:inherit}
+  .btn-delete-fiche-self svg{width:14px;height:14px}
+  .btn-delete-fiche-self:hover{color:var(--red)}
+  .btn-delete-fiche-self.confirm{color:var(--red)}
 
   /* ---------- Bannière prochaine session ---------- */
   .session-banner{background:var(--red);color:#fff;border-radius:20px;padding:28px 32px;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 14px 32px -12px rgba(200,16,46,.45);display:block}
@@ -872,7 +876,8 @@
     myNameDraft: null, /* texte en cours de saisie dans le champ "Votre nom" de Mes missions, tant qu'il n'a pas été validé (survit à un re-rendu pendant la frappe) */
     ficheNewIntervenant: "", /* texte en cours de saisie dans le formulaire "nouvelle fiche pour un(e) intervenant(e)" */
     ficheAdminFilterSession: "", /* session choisie dans l'onglet Fiches du Dashboard (sert aussi d'archives) */
-    ficheAdminView: null /* id de la fiche actuellement ouverte en lecture seule par l'administrateur */
+    ficheAdminView: null, /* id de la fiche actuellement ouverte en lecture seule par l'administrateur */
+    confirmDeleteFiches: {}
   };
 
   /* Stockage : Supabase (base de données partagée, accessible sans compte
@@ -1330,6 +1335,25 @@
       if(cb) cb(true);
     }
   }
+  function deleteFiche(id, cb){
+    if(sb){
+      sb.from("fiche_reponses").delete().eq("id", id).then(function(res){
+        if(res.error){ cb(false, res.error); return; }
+        fetchAllFiches();
+        cb(true);
+      });
+    } else {
+      var idx = LOCAL_FICHES_FALLBACK.findIndex(function(x){ return x.id===id; });
+      if(idx>-1) LOCAL_FICHES_FALLBACK.splice(idx,1);
+      state.fiches = LOCAL_FICHES_FALLBACK;
+      render();
+      cb(true);
+    }
+  }
+  function isFicheDeleteArmed(id){
+    var exp = state.confirmDeleteFiches[id];
+    return !!exp && exp > Date.now();
+  }
 
   /* ============================= DB LAYER (Affiches) ============================= */
   function affichesSorted(){
@@ -1723,16 +1747,21 @@
     render();
   });
   document.addEventListener("click", function(e){
-    var mnpItem = e.target.closest(".mnp-item");
     var t = e.target.closest("[data-nav]");
     if(t){
       // Un data-nav cliqué depuis l'intérieur de la modale de détail (ex. le
       // bouton "Remplir la fiche Mentor") doit d'abord fermer cette modale :
       // sinon elle reste affichée par-dessus la page nouvellement ouverte.
       if(t.closest("#detailModal")) closeDetailModal();
+      if(t.closest(".mnp-item")) closeMobileDrawer();
       navTo(t.getAttribute("data-nav"));
+      // On s'arrête ici : un data-nav peut se trouver à l'intérieur d'une
+      // carte cliquable (data-detail/data-poster/data-media) — par exemple
+      // le bouton "Remplir la fiche Mentor" sur une carte présentateur — et
+      // ne doit déclencher que la navigation, pas aussi l'ouverture de la
+      // modale/lightbox de cette carte.
+      return;
     }
-    if(mnpItem){ closeMobileDrawer(); }
     var d = e.target.closest("[data-detail]");
     if(d){ openDetailModal(d.getAttribute("data-detail")); }
     var p = e.target.closest("[data-poster]");
@@ -1741,6 +1770,33 @@
     if(med){ openMediaLightbox(med.getAttribute("data-media")); }
     var fav = e.target.closest("[data-fiche-admin-view]");
     if(fav){ openFicheAdminViewModal(fav.getAttribute("data-fiche-admin-view")); }
+    // Suppression d'une fiche depuis une vue administrateur (onglet Fiches du
+    // Dashboard, ou bloc "Fiches de la session") : même logique "cliquer deux
+    // fois pour confirmer" que les autres suppressions de l'app.
+    var fdel = e.target.closest("[data-fiche-admin-delete]");
+    if(fdel){
+      var fid = fdel.getAttribute("data-fiche-admin-delete");
+      if(!isFicheDeleteArmed(fid)){
+        var fArmedAt = Date.now() + 4000;
+        state.confirmDeleteFiches[fid] = fArmedAt;
+        fdel.classList.add("confirm");
+        fdel.title = "Cliquer à nouveau pour confirmer la suppression";
+        setTimeout(function(){
+          if(state.confirmDeleteFiches[fid]===fArmedAt){
+            delete state.confirmDeleteFiches[fid];
+            fdel.classList.remove("confirm");
+            fdel.title = "Supprimer cette fiche";
+          }
+        }, 4000);
+      } else {
+        delete state.confirmDeleteFiches[fid];
+        fdel.disabled = true;
+        deleteFiche(fid, function(success, err){
+          if(success){ toast("Fiche supprimée", ""); }
+          else{ fdel.disabled = false; toast("Suppression impossible", (err && err.message) || "Réessayez.", true); }
+        });
+      }
+    }
     // Ferme la fenêtre de détail si on clique sur le fond sombre ou sur le
     // bouton de fermeture (mais pas sur son contenu, qui n'a pas cet attribut).
     if(e.target.id==="detailModal" || e.target.closest("[data-modal-close]")){ closeDetailModal(); }
@@ -2380,6 +2436,8 @@
   function renderCardsGrid(list){
     return '<div class="grid-cards">' + list.map(function(it){
       var th = themeById(it.theme);
+      var mentorFiche = it.mentorName ? ficheForProposition(it.id, "mentor") : null;
+      var mst = mentorFiche ? ficheStatusById(mentorFiche.status) : null;
       return '<div class="talk-card" data-detail="'+esc(it.id)+'" role="button" tabindex="0" aria-label="Voir le détail de '+esc(it.title)+'">'+
         (it.demo ? '<span class="demo-badge">Exemple</span>' : '')+
         '<span class="theme-tag"><span class="dot" style="background:'+th.color+'"></span>'+esc(th.label)+'</span>'+
@@ -2387,6 +2445,12 @@
         '<p class="desc">'+esc(it.description||"")+'</p>'+
         '<div class="meta-row">'+ICONS.mentor+' Mentor : '+esc(it.mentorName||"—")+'</div>'+
         '<div class="meta-row">'+ICONS.calendar+' '+fmtDate(it.desiredDate)+' · '+ICONS.clock+' '+esc(it.duration||"—")+'</div>'+
+        (it.mentorName ?
+          '<div class="meta-row" style="justify-content:space-between;align-items:center">'+
+            '<button type="button" class="btn btn-outline-navy btn-sm" data-nav="#/fiche/p/'+esc(it.id)+'">'+ICONS.file+' Fiche Mentor</button>'+
+            (mst ? '<span class="pill '+mst.pill+'">'+esc(mst.label)+'</span>' : '')+
+          '</div>'
+          : '')+
         '<div class="card-foot"><span style="font-size:13px;font-weight:600">'+esc(it.presenterName)+'</span>'+statusPill(it.status)+'</div>'+
       '</div>';
     }).join("") + '</div>';
@@ -2543,7 +2607,10 @@
                 '<td>'+esc(f.intervenantName||"—")+'</td>'+
                 '<td><span class="pill '+st.pill+'">'+esc(st.label)+'</span></td>'+
                 '<td class="cell-sub">'+fmtDateTimeShort(f.updatedAt||f.createdAt)+'</td>'+
-                '<td><button type="button" class="btn btn-ghost btn-sm" data-fiche-admin-view="'+esc(f.id)+'">'+ICONS.eye+' Consulter</button></td>'+
+                '<td style="display:flex;gap:6px;justify-content:flex-end">'+
+                  '<button type="button" class="btn btn-ghost btn-sm" data-fiche-admin-view="'+esc(f.id)+'">'+ICONS.eye+' Consulter</button>'+
+                  '<button type="button" class="icon-btn'+(isFicheDeleteArmed(f.id)?" confirm":"")+'" data-fiche-admin-delete="'+esc(f.id)+'" title="'+(isFicheDeleteArmed(f.id)?"Cliquer à nouveau pour confirmer la suppression":"Supprimer cette fiche")+'">'+ICONS.trash+'</button>'+
+                '</td>'+
               '</tr>';
             }).join("")+
           '</tbody></table>'+
@@ -2964,6 +3031,11 @@
           '<button type="button" class="btn btn-secondary" id="btnFicheSave">Enregistrer</button>'+
           '<button type="button" class="btn btn-primary" id="btnFicheValidate">'+ICONS.check+' Valider ma fiche</button>'+
         '</div>')+
+      (fiche.id ?
+        '<div style="text-align:right;margin-top:10px">'+
+          '<button type="button" class="btn-delete-fiche-self'+(isFicheDeleteArmed(fiche.id)?" confirm":"")+'" data-id="'+esc(fiche.id)+'">'+ICONS.trash+' '+(isFicheDeleteArmed(fiche.id)?"Cliquer à nouveau pour confirmer":"Supprimer cette fiche")+'</button>'+
+        '</div>'
+        : '')+
     '</section>';
   }
 
@@ -3110,6 +3182,36 @@
       if(!window.confirm("Valider définitivement cette fiche ? Elle ne sera plus modifiable ensuite.")) return;
       saveFicheDraft("termine", true);
     });
+
+    // Suppression de la fiche par la personne qui l'a remplie (même logique
+    // "cliquer deux fois pour confirmer" que les suppressions admin).
+    var btnDeleteSelf = document.querySelector(".btn-delete-fiche-self");
+    if(btnDeleteSelf){
+      btnDeleteSelf.addEventListener("click", function(){
+        var fid = btnDeleteSelf.getAttribute("data-id");
+        if(!isFicheDeleteArmed(fid)){
+          // On sauvegarde d'abord dans state.ficheDraft ce qui a déjà été
+          // saisi dans le formulaire (non encore enregistré), pour ne pas le
+          // perdre au re-rendu déclenché par l'armement du bouton.
+          var root = document.getElementById("ficheFormRoot");
+          if(root && state.ficheDraft){ state.ficheDraft.data = serializeFicheForm(state.ficheDraft.tpl, root); }
+          var armedAt = Date.now() + 4000;
+          state.confirmDeleteFiches[fid] = armedAt;
+          render();
+          setTimeout(function(){
+            if(state.confirmDeleteFiches[fid]===armedAt){ delete state.confirmDeleteFiches[fid]; render(); }
+          }, 4000);
+          return;
+        }
+        delete state.confirmDeleteFiches[fid];
+        var d = state.ficheDraft;
+        var backHash = d && d.fiche ? backHashFor(d.fiche) : "#/";
+        deleteFiche(fid, function(success, err){
+          if(success){ toast("Fiche supprimée", ""); state.ficheDraft = null; navTo(backHash); }
+          else{ toast("Suppression impossible", (err && err.message) || "Réessayez.", true); render(); }
+        });
+      });
+    }
   }
 
   function openSessionFormModal(id){
@@ -3878,7 +3980,10 @@
                 '<td>'+esc(f.intervenantName||"—")+'</td>'+
                 '<td><span class="pill '+st.pill+'">'+esc(st.label)+'</span></td>'+
                 '<td class="cell-sub">'+fmtDateTimeShort(f.updatedAt||f.createdAt)+'</td>'+
-                '<td><button type="button" class="btn btn-ghost btn-sm" data-fiche-admin-view="'+esc(f.id)+'">'+ICONS.eye+' Consulter</button></td>'+
+                '<td style="display:flex;gap:6px;justify-content:flex-end">'+
+                  '<button type="button" class="btn btn-ghost btn-sm" data-fiche-admin-view="'+esc(f.id)+'">'+ICONS.eye+' Consulter</button>'+
+                  '<button type="button" class="icon-btn'+(isFicheDeleteArmed(f.id)?" confirm":"")+'" data-fiche-admin-delete="'+esc(f.id)+'" title="'+(isFicheDeleteArmed(f.id)?"Cliquer à nouveau pour confirmer la suppression":"Supprimer cette fiche")+'">'+ICONS.trash+'</button>'+
+                '</td>'+
               '</tr>';
             }).join("")+
           '</tbody></table>'+
