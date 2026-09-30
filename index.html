@@ -2498,45 +2498,29 @@
   // on le compare aux noms déjà assignés dans les rôles de CETTE session, et
   // on affiche uniquement les rôles — parmi ceux qui ont une fiche numérique —
   // qui lui sont attribués.
+  // Tous les rôles avec fiche numérique sont affichés directement (pas de
+  // filtrage par nom ici : l'assignation change à chaque session, et la
+  // personne renseigne de toute façon son nom au moment de remplir sa
+  // fiche — voir renderFicheNameGate). Un clic sur un rôle suffit pour
+  // commencer.
   function renderMesMissions(s, roles){
-    var myName = state.myNameDraft!==null ? state.myNameDraft : getMyName();
-    var trimmed = (myName||"").trim();
-    var namesInSession = [];
-    SESSION_ROLES.forEach(function(r){ (roles[r.id]||[]).forEach(function(n){ if(namesInSession.indexOf(n)===-1) namesInSession.push(n); }); });
-
-    var matchedRoles = [];
-    if(trimmed){
-      SESSION_ROLES.forEach(function(r){
-        var unlocks = FICHE_UNLOCKS_BY_SESSION_ROLE[r.id];
-        if(!unlocks) return;
-        var people = roles[r.id]||[];
-        var mine = people.some(function(n){ return normalizeName(n)===normalizeName(trimmed); });
-        if(mine){ unlocks.forEach(function(fk){ matchedRoles.push({ficheRole:fk, sessionRoleLabel:r.label}); }); }
-      });
-    }
-
+    var ficheRoles = [];
+    SESSION_ROLES.forEach(function(r){
+      var unlocks = FICHE_UNLOCKS_BY_SESSION_ROLE[r.id];
+      if(!unlocks) return;
+      unlocks.forEach(function(fk){ if(ficheRoles.indexOf(fk)===-1) ficheRoles.push(fk); });
+    });
     return '<div class="section-head" style="margin:30px 0 16px">'+
         '<span class="kicker">Mes missions</span>'+
         '<h3 style="margin:0;font-size:18px">Remplir ma fiche</h3>'+
       '</div>'+
       '<div class="form-card mission-card">'+
-        '<div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">'+
-          '<div class="field" style="max-width:300px;margin-bottom:0">'+
-            '<label for="myNameInput">Votre nom</label>'+
-            '<input type="text" id="myNameInput" list="sessionNamesList" placeholder="Nom et prénom" value="'+esc(myName)+'" autocomplete="off">'+
-            '<datalist id="sessionNamesList">'+namesInSession.map(function(n){ return '<option value="'+esc(n)+'">'; }).join("")+'</datalist>'+
-          '</div>'+
-          '<button type="button" class="btn btn-outline-navy btn-sm" id="btnSeeMissions">Voir mes missions</button>'+
+        '<p style="margin:0 0 14px;font-size:13px;color:var(--text-soft)">Cliquez sur votre rôle pour cette session pour remplir votre fiche d\'observation.</p>'+
+        '<div class="mission-chips">'+
+          ficheRoles.map(function(fk){
+            return '<button type="button" class="mission-chip" data-mission-open="'+esc(fk)+'">'+ICONS.file+' '+esc(FICHE_TEMPLATES[fk].label)+'</button>';
+          }).join("")+
         '</div>'+
-        (trimmed ?
-          (matchedRoles.length ?
-            '<div class="mission-chips">'+
-              matchedRoles.map(function(m){
-                return '<button type="button" class="mission-chip" data-mission-open="'+esc(m.ficheRole)+'">'+ICONS.file+' '+esc(FICHE_TEMPLATES[m.ficheRole].label)+'</button>';
-              }).join("")+
-            '</div>'
-            : '<p style="margin-top:14px;font-size:13px">Aucun rôle avec fiche numérique n\'est assigné à ce nom pour cette session. Vérifiez l\'orthographe, ou demandez à être ajouté(e) à un rôle ci-dessus.</p>')
-          : '<p style="margin-top:14px;font-size:13px;color:var(--text-soft)">Indiquez votre nom pour retrouver vos fiches à remplir (Grammarian, Timekeeper, Posture Visualizer, Évaluateur…) pour cette session.</p>')+
       '</div>';
   }
 
@@ -2852,18 +2836,41 @@
       }
       return renderFicheEditorPage(s, tpl, fiche, null);
     }
-    // info.kind === "session-role"
-    var myName = getMyName();
-    if(!myName){
-      return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Indiquez votre nom dans « Mes missions », sur la page de la session, pour accéder à votre fiche.</div>'+
-        '<button type="button" class="btn btn-outline-navy" data-nav="#/sessions/'+esc(s.id)+'" style="margin-top:18px">← Retour à la session</button></div></section>';
+    // info.kind === "session-role" : on clique directement sur son rôle
+    // depuis « Mes missions » (plus de filtrage par nom en amont — voir
+    // renderMesMissions) ; le nom n'est demandé qu'ici, au moment de
+    // commencer à remplir, via une courte porte d'entrée.
+    var myName = state.myNameDraft!==null ? state.myNameDraft : getMyName();
+    var trimmed = (myName||"").trim();
+    if(!trimmed){
+      return renderFicheNameGate(s, tpl);
     }
     if(FICHE_SCOPE[info.roleKey]==="session"){
-      var existing = singleFicheFor(s.id, info.roleKey, myName);
-      var draft = existing || {id:null, sessionId:s.id, roleKey:info.roleKey, participantName:myName, intervenantName:null, status:"a_remplir", formData:{}};
+      var existing = singleFicheFor(s.id, info.roleKey, trimmed);
+      var draft = existing || {id:null, sessionId:s.id, roleKey:info.roleKey, participantName:trimmed, intervenantName:null, status:"a_remplir", formData:{}};
       return renderFicheEditorPage(s, tpl, draft, null);
     }
-    return renderFicheChooser(s, info.roleKey, myName);
+    return renderFicheChooser(s, info.roleKey, trimmed);
+  }
+
+  // Courte porte d'entrée : demande le nom de la personne qui remplit,
+  // seulement au moment où elle clique sur son rôle (pas avant, sur la
+  // liste des rôles de la session).
+  function renderFicheNameGate(s, tpl){
+    return '<section class="wrap">'+
+      '<button type="button" class="btn btn-ghost btn-sm" data-nav="#/sessions/'+esc(s.id)+'" style="margin-bottom:18px;padding-left:0">← Retour à la session</button>'+
+      '<div class="section-head" style="margin-bottom:16px">'+
+        '<span class="kicker">'+esc(tpl.label)+'</span>'+
+        '<h2 style="margin-bottom:4px">'+esc(tpl.subtitle||tpl.label)+'</h2>'+
+      '</div>'+
+      '<div class="form-card" style="max-width:420px">'+
+        '<div class="field" style="margin-bottom:12px">'+
+          '<label for="ficheGateNameInput">Votre nom</label>'+
+          '<input type="text" id="ficheGateNameInput" placeholder="Nom et prénom" autocomplete="off" value="'+esc(getMyName())+'">'+
+        '</div>'+
+        '<button type="button" class="btn btn-primary" id="btnFicheGateContinue">Continuer</button>'+
+      '</div>'+
+    '</section>';
   }
 
   function renderFicheChooser(s, roleKey, myName){
@@ -3013,6 +3020,24 @@
   }
 
   function bindFicheRouteEvents(){
+    // Porte d'entrée : on demande le nom seulement ici, au moment de
+    // commencer à remplir un rôle (voir renderFicheNameGate).
+    var gateInput = document.getElementById("ficheGateNameInput");
+    var gateBtn = document.getElementById("btnFicheGateContinue");
+    if(gateBtn){
+      var submitGate = function(){
+        var name = (gateInput ? gateInput.value : "").trim();
+        if(!name){ toast("Nom requis", "Indiquez votre nom pour continuer.", true); return; }
+        setMyName(name);
+        state.myNameDraft = name;
+        render();
+      };
+      gateBtn.addEventListener("click", submitGate);
+      if(gateInput){
+        gateInput.addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); submitGate(); } });
+      }
+    }
+
     // Chooser (fiches "par intervenant") : création d'une nouvelle fiche.
     var newIntervenantInput = document.getElementById("newIntervenantInput");
     if(newIntervenantInput){
@@ -3190,20 +3215,8 @@
     var editBtn = document.getElementById("btnEditSession");
     if(editBtn) editBtn.addEventListener("click", function(){ openSessionFormModal(id); });
 
-    // ---- Mes missions (fiches numériques) ----
-    var myNameInput = document.getElementById("myNameInput");
-    if(myNameInput){
-      myNameInput.addEventListener("input", function(){ state.myNameDraft = myNameInput.value; });
-    }
-    var btnSeeMissions = document.getElementById("btnSeeMissions");
-    if(btnSeeMissions){
-      btnSeeMissions.addEventListener("click", function(){
-        var v = (myNameInput ? myNameInput.value : "").trim();
-        state.myNameDraft = v;
-        setMyName(v);
-        render();
-      });
-    }
+    // ---- Mes missions (fiches numériques) : clic direct sur un rôle, le
+    // nom est demandé plus loin (voir renderFicheNameGate). ----
     document.querySelectorAll("[data-mission-open]").forEach(function(btn){
       btn.addEventListener("click", function(){
         var ficheRole = btn.getAttribute("data-mission-open");
