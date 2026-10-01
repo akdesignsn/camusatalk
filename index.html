@@ -622,12 +622,13 @@
 
   /* ============================= FICHES DE RÔLE ============================= */
   // Version numérique des fiches papier (Grammarian, Timekeeper, Posture
-  // Visualizer, Évaluateur, Mentor) : chaque personne assignée à un rôle de
-  // session (ou mentor d'une proposition) peut remplir sa fiche directement
-  // dans l'application, avec sauvegarde persistante (table Supabase
-  // "fiche_reponses", voir README.md pour le SQL de création).
+  // Visualizer, Évaluateur, Mentor, Guest) : chaque personne assignée à un
+  // rôle de session (ou mentor d'une proposition, ou simple participant pour
+  // le feedback Guest) peut remplir sa fiche directement dans l'application,
+  // avec sauvegarde persistante (table Supabase "fiche_reponses", voir
+  // README.md pour le SQL de création).
   //
-  // Deux "portées" de fiche :
+  // Quatre "portées" de fiche :
   // - "session"            : une seule fiche par session pour cette personne
   //                          (Timekeeper, qui suit toutes les interventions
   //                          dans un même tableau).
@@ -635,6 +636,13 @@
   //                          session (Grammarian, Posture Visualizer,
   //                          Évaluateur) — la même personne peut donc remplir
   //                          plusieurs fiches (une par présentation suivie).
+  // - "session_multi"       : plusieurs fiches indépendantes par session, sans
+  //                          intervenant(e) observé(e) à préciser (Guest —
+  //                          chaque participant qui donne son avis sur la
+  //                          session crée sa propre fiche, comme pour
+  //                          "session_intervenant", mais le feedback porte sur
+  //                          la session dans son ensemble, pas sur une
+  //                          personne en particulier).
   // - "proposition"         : une fiche rattachée directement à une
   //                          proposition (Mentor) — aucun lien formel entre
   //                          "sessions" et "propositions" n'existe dans cette
@@ -646,7 +654,8 @@
     timekeeper: "session",
     posture_visualizer: "session_intervenant",
     evaluateur: "session_intervenant",
-    mentor: "proposition"
+    mentor: "proposition",
+    guest: "session_multi"
   };
   // Quelles fiches numériques chaque rôle de SESSION_ROLES déverrouille (un
   // même rôle "timekeeper" couvre deux fiches distinctes : Timekeeper et
@@ -819,6 +828,59 @@
         ]},
         { title: "6. Commentaire final", fields: [
           { type:"textarea", key:"commentaireFinal", label:"", rows:6 }
+        ]}
+      ]
+    },
+    // Fiche ouverte à tout participant (pas seulement aux personnes
+    // assignées à un rôle de la session) : voir "session_multi" dans
+    // FICHE_SCOPE — chaque Guest crée sa propre fiche, il n'y a pas
+    // d'intervenant(e) observé(e) puisque le feedback porte sur la session
+    // entière. Fidèle à la fiche papier "Fiche Guest -- Feedback".
+    guest: {
+      label: "Guest",
+      subtitle: "Fiche de feedback",
+      intro: [
+        {h:"Merci d'avoir participé à cette session !", p:"Votre regard nous aide à améliorer les prochaines éditions."}
+      ],
+      sections: [
+        { title: "1. Votre ressenti général", fields: [
+          { type:"radio", key:"ressenti", options:[
+            {value:"excellent", label:"Excellent"},
+            {value:"tres_bien", label:"Très bien"},
+            {value:"bien", label:"Bien"},
+            {value:"a_ameliorer", label:"À améliorer"},
+            {value:"a_revoir", label:"À revoir"}
+          ]}
+        ]},
+        { title: "2. Qu'avez-vous le plus apprécié ?", fields: [
+          { type:"checkbox_group", key:"apprecie", allowOther:true, otherKey:"apprecieAutre", options:[
+            {value:"presentations", label:"Les présentations"},
+            {value:"echanges", label:"Les échanges"},
+            {value:"themes", label:"Les thèmes abordés"},
+            {value:"ambiance", label:"L'ambiance"},
+            {value:"organisation", label:"L'organisation"}
+          ]}
+        ]},
+        { title: "3. Un moment ou une idée que vous retenez particulièrement", fields: [
+          { type:"textarea", key:"momentRetenu", label:"", rows:4 }
+        ]},
+        { title: "4. Selon vous, qu'est-ce qui pourrait être amélioré ?", fields: [
+          { type:"textarea", key:"ameliorations", label:"", rows:4 }
+        ]},
+        { title: "5. Quels thèmes aimeriez-vous voir lors des prochaines sessions ?", fields: [
+          { type:"textarea", key:"themesSouhaites", label:"", rows:4 }
+        ]},
+        { title: "6. Un mot pour l'équipe Camusat Talk", fields: [
+          { type:"textarea", key:"motEquipe", label:"", rows:4 }
+        ]},
+        { title: "7. Recommanderiez-vous de participer à une prochaine session ?", fields: [
+          { type:"radio", key:"recommandation", options:[
+            {value:"1", label:"1 ⭐"},
+            {value:"2", label:"2 ⭐⭐"},
+            {value:"3", label:"3 ⭐⭐⭐"},
+            {value:"4", label:"4 ⭐⭐⭐⭐"},
+            {value:"5", label:"5 ⭐⭐⭐⭐⭐"}
+          ]}
         ]}
       ]
     }
@@ -2647,12 +2709,16 @@
     // le chip navigue vers une liste de toutes les propositions à mentorer,
     // au lieu d'une fiche unique pour cette session.
     ficheRoles.push("mentor");
+    // Le Guest n'est pas non plus un rôle de SESSION_ROLES : n'importe quel
+    // participant (assigné à un rôle ou simple invité) peut donner son avis
+    // sur la session, d'où son ajout systématique ici, comme pour le Mentor.
+    ficheRoles.push("guest");
     return '<div class="section-head" style="margin:30px 0 16px">'+
         '<span class="kicker">Mes missions</span>'+
         '<h3 style="margin:0;font-size:18px">Remplir ma fiche</h3>'+
       '</div>'+
       '<div class="form-card mission-card">'+
-        '<p style="margin:0 0 14px;font-size:13px;color:var(--text-soft)">Cliquez sur votre rôle pour remplir votre fiche d\'observation.</p>'+
+        '<p style="margin:0 0 14px;font-size:13px;color:var(--text-soft)">Cliquez sur votre rôle pour remplir votre fiche d\'observation — ou sur « Guest » si vous souhaitez simplement partager votre avis sur la session.</p>'+
         '<div class="mission-chips">'+
           ficheRoles.map(function(fk){
             return '<button type="button" class="mission-chip" data-mission-open="'+esc(fk)+'">'+ICONS.file+' '+esc(FICHE_TEMPLATES[fk].label)+'</button>';
@@ -3143,14 +3209,20 @@
       '<div class="section-head" style="margin-bottom:16px">'+
         '<span class="kicker">'+esc(tpl.label)+'</span>'+
         '<h2 style="margin-bottom:4px">Fiches '+esc(tpl.label)+'</h2>'+
-        '<p style="margin:0">Session '+esc(s.name||"")+' — toutes les fiches déjà remplies pour ce rôle.</p>'+
+        '<p style="margin:0">'+esc(s.name||"Session")+' — toutes les fiches déjà remplies pour ce rôle.</p>'+
       '</div>'+
       (list.length ? '<div class="grid-cards" style="margin-bottom:24px">'+list.map(function(f){
         var st = ficheStatusById(f.status);
+        // Les fiches "session_multi" (Guest) n'ont pas d'intervenant(e)
+        // observé(e) — le titre de la carte est alors directement le nom de
+        // la personne qui a rempli sa fiche, plutôt que le texte de repli
+        // "Sans intervenant(e)" qui n'a pas de sens pour un feedback Guest.
+        var isMulti = FICHE_SCOPE[roleKey]==="session_multi";
+        var cardTitle = isMulti ? (f.participantName||"Fiche sans nom") : (f.intervenantName||"Sans intervenant(e)");
         return '<div class="talk-card" data-nav="#/fiche/s/'+esc(s.id)+'/'+esc(roleKey)+'/'+esc(f.id)+'" role="button" tabindex="0">'+
           '<div class="mc-top"><span class="pill '+st.pill+'">'+esc(st.label)+'</span></div>'+
-          '<h3 style="font-size:16px">'+esc(f.intervenantName||"Sans intervenant(e)")+'</h3>'+
-          '<div class="meta-row">Rempli par '+esc(f.participantName||"—")+'</div>'+
+          '<h3 style="font-size:16px">'+esc(cardTitle)+'</h3>'+
+          (isMulti ? '' : '<div class="meta-row">Rempli par '+esc(f.participantName||"—")+'</div>')+
           '<div class="meta-row">Dernière modification '+fmtDateTimeShort(f.updatedAt||f.createdAt)+'</div>'+
         '</div>';
       }).join("")+'</div>' : '<div class="empty-state" style="margin-bottom:24px">'+ICONS.empty+'<div>Aucune fiche pour le moment.</div></div>')+
@@ -3202,7 +3274,8 @@
 
   function backHashFor(fiche){
     if(fiche.propositionId) return "#/presentateurs";
-    if(FICHE_SCOPE[fiche.roleKey]==="session_intervenant") return "#/fiche/s/"+encodeURIComponent(fiche.sessionId)+"/"+encodeURIComponent(fiche.roleKey);
+    var scope = FICHE_SCOPE[fiche.roleKey];
+    if(scope==="session_intervenant" || scope==="session_multi") return "#/fiche/s/"+encodeURIComponent(fiche.sessionId)+"/"+encodeURIComponent(fiche.roleKey);
     return "#/sessions/"+encodeURIComponent(fiche.sessionId);
   }
 
