@@ -1367,6 +1367,19 @@
     return upcoming.length ? upcoming[0] : null;
   }
 
+  // Session "la plus pertinente maintenant" pour un lien/QR Guest permanent
+  // (voir renderGuestShortcut, route "#/guest") : la session déjà commencée
+  // la plus récente (on scanne le QR PENDANT ou juste après la session, donc
+  // nextUpcomingSession() — strictement future — la raterait), avec repli sur
+  // la prochaine session à venir si aucune n'a encore démarré (ex. quelqu'un
+  // teste le lien avant l'ouverture des portes).
+  function sessionForGuestQR(){
+    var now = new Date().toISOString();
+    var started = sessionsSorted().filter(function(s){ return s.sessionDatetime && s.sessionDatetime <= now; });
+    if(started.length) return started[started.length-1];
+    return nextUpcomingSession();
+  }
+
   /* ============================= DB LAYER (Fiches) ============================= */
   function fetchAllFiches(){
     if(!sb) return;
@@ -1774,6 +1787,9 @@
     if(h.indexOf("#/media")===0) return "media";
     if(h.indexOf("#/dashboard")===0) return "dashboard";
     if(h.indexOf("#/fiche/")===0) return "fiche";
+    // Lien court et permanent (voir sessionForGuestQR) : à imprimer une
+    // seule fois sur un QR code, il reste valable d'une session à l'autre.
+    if(h.indexOf("#/guest")===0) return "guest";
     return "accueil";
   }
   function sessionIdFromHash(){
@@ -2191,6 +2207,7 @@
     else if(route==="media") view.innerHTML = renderMediaGallery();
     else if(route==="dashboard") view.innerHTML = renderDashboard();
     else if(route==="fiche") view.innerHTML = renderFicheRoute();
+    else if(route==="guest") view.innerHTML = renderGuestShortcut();
     var routeKey = route + (route==="sessions" ? ":"+(sessionIdFromHash()||"") : "") + (route==="fiche" ? ":"+location.hash : "");
     if(routeKey !== lastRenderedRouteKey){
       window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
@@ -3101,6 +3118,19 @@
   }
 
   /* ============================= FICHES — ROUTES & PAGES ============================= */
+  // Lien court et permanent pour un QR code imprimé une seule fois (voir
+  // sessionForGuestQR) : "#/guest" redirige toujours vers une fiche Guest
+  // neuve pour la session actuellement pertinente, sans jamais coder l'ID
+  // d'une session précise dans le QR code lui-même.
+  function renderGuestShortcut(){
+    var s = sessionForGuestQR();
+    if(!s){
+      return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Aucune session CAMUSAT TALK n\'est encore programmée. Revenez un peu plus tard.</div>'+
+        '<button type="button" class="btn btn-outline-navy" data-nav="#/" style="margin-top:18px">← Retour à l\'accueil</button></div></section>';
+    }
+    setTimeout(function(){ location.hash = "#/fiche/s/"+encodeURIComponent(s.id)+"/guest/new"; }, 0);
+    return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Redirection…</div></div></section>';
+  }
   function renderFicheRoute(){
     var info = ficheRouteInfo();
     if(!info){
