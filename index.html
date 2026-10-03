@@ -425,6 +425,11 @@
   .session-banner h3{color:#fff;margin:0 0 8px;font-size:clamp(18px,2.4vw,22px)}
   .session-banner p{color:#ffe1e5;margin:0 0 4px;font-size:14px}
   .session-banner-cta{display:inline-block;margin-top:14px;font-weight:700;font-size:13.5px;color:#fff}
+  .session-banner.is-finished{background:var(--navy);box-shadow:0 14px 32px -12px rgba(32,50,97,.45)}
+  .session-banner.is-finished:hover{box-shadow:0 20px 40px -12px rgba(32,50,97,.55)}
+  .session-banner.is-finished .session-banner-label{color:#c7d3f2}
+  .session-banner.is-finished p{color:#d6def5}
+  .session-banner-done{background:#fff;color:var(--navy);border-radius:999px;padding:2px 10px;font-size:11px;letter-spacing:.04em}
 
   /* ---------- Affiches ---------- */
   .poster-home-card{display:flex;align-items:center;gap:18px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 30px;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s,transform .15s}
@@ -2282,12 +2287,20 @@
   }
 
   function renderNextSessionBanner(){
+    // Session à venir en priorité ; sinon, la dernière session passée reste
+    // visible sur l'accueil avec la mention « Terminée » (au lieu de disparaître).
     var s = nextUpcomingSession();
-    if(!s) return "";
-    var line2 = [s.location, s.teamsLink ? "Microsoft Teams" : ""].filter(Boolean).join(" | ");
+    var finished = false;
+    if(!s){
+      var past = sessionsSorted().filter(function(x){ return x.sessionDatetime; });
+      if(!past.length) return "";
+      s = past[past.length-1];
+      finished = true;
+    }
+    var line2 = [s.location, s.teamsLink && !finished ? "Microsoft Teams" : ""].filter(Boolean).join(" | ");
     return '<section class="wrap">'+
-      '<div class="session-banner" data-nav="#/sessions/'+esc(s.id)+'" role="button" tabindex="0" aria-label="Voir les détails de la session '+esc(s.name||"")+'">'+
-        '<div class="session-banner-label">'+ICONS.calendar+' Prochaine session CAMUSAT TALK</div>'+
+      '<div class="session-banner'+(finished ? ' is-finished' : '')+'" data-nav="#/sessions/'+esc(s.id)+'" role="button" tabindex="0" aria-label="Voir les détails de la session '+esc(s.name||"")+'">'+
+        '<div class="session-banner-label">'+ICONS.calendar+' '+(finished ? 'Dernière session CAMUSAT TALK <span class="session-banner-done">Terminée</span>' : 'Prochaine session CAMUSAT TALK')+'</div>'+
         '<h3>Session #'+esc(s.sessionNumber||"—")+' – '+esc(s.name||"Sans titre")+'</h3>'+
         '<p>'+fmtSessionDateTime(s.sessionDatetime)+'</p>'+
         (line2 ? '<p>'+esc(line2)+'</p>' : '')+
@@ -2652,8 +2665,9 @@
   function renderSessionCard(s){
     var next = nextUpcomingSession();
     var isNext = !!next && next.id===s.id;
+    var isPast = !!s.sessionDatetime && s.sessionDatetime < new Date().toISOString();
     return '<div class="talk-card" data-nav="#/sessions/'+esc(s.id)+'" role="button" tabindex="0" aria-label="Voir la session '+esc(s.name||"")+'">'+
-      '<div class="mc-top">'+(isNext ? '<span class="pill pill-validee">Prochaine session</span>' : '<span class="theme-tag">Session #'+esc(s.sessionNumber||"—")+'</span>')+'</div>'+
+      '<div class="mc-top">'+(isNext ? '<span class="pill pill-validee">Prochaine session</span>' : '<span class="theme-tag">Session #'+esc(s.sessionNumber||"—")+'</span>')+(isPast ? ' <span class="pill pill-realisee">Terminée</span>' : '')+'</div>'+
       '<h3>'+esc(s.name||"Session sans nom")+'</h3>'+
       '<div class="meta-row">'+ICONS.calendar+' '+fmtSessionDateTime(s.sessionDatetime)+'</div>'+
       (s.location ? '<div class="meta-row">'+ICONS.pin+' '+esc(s.location)+'</div>' : '')+
