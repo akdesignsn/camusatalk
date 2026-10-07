@@ -25,6 +25,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#203261">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CAMUSAT TALK">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="description" content="Programme interne de prise de parole, de partage d'expérience et de développement des compétences chez Camusat Sénégal.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -425,6 +433,12 @@
   .session-banner h3{color:#fff;margin:0 0 8px;font-size:clamp(18px,2.4vw,22px)}
   .session-banner p{color:#ffe1e5;margin:0 0 4px;font-size:14px}
   .session-banner-cta{display:inline-block;margin-top:14px;font-weight:700;font-size:13.5px;color:#fff}
+  .photos-block{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--navy-tint);border-radius:18px;padding:20px 24px;margin-bottom:30px}
+  .photos-block-icon{width:46px;height:46px;border-radius:13px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .photos-block-text{flex:1;min-width:200px}
+  .photos-block-text h3{margin:0 0 3px;font-size:17px}
+  .photos-block-text p{margin:0;font-size:14px;color:var(--text-soft)}
+  .photos-block .btn{white-space:nowrap}
   .session-banner.is-finished{background:var(--navy);box-shadow:0 14px 32px -12px rgba(32,50,97,.45)}
   .session-banner.is-finished:hover{box-shadow:0 20px 40px -12px rgba(32,50,97,.55)}
   .session-banner.is-finished .session-banner-label{color:#c7d3f2}
@@ -1050,6 +1064,19 @@
     var o = {};
     SESSION_ROLES.forEach(function(r){ o[r.id] = []; });
     return o;
+  }
+
+  /* Lien du dossier photos (Google Drive, OneDrive…) d'une session.
+     Stocké DANS la colonne JSON "roles" (clé "photosLink") plutôt que dans
+     une nouvelle colonne : aucune modification de la base Supabase n'est
+     nécessaire, et les autres clés de "roles" (listes de noms) ne sont pas
+     touchées (les ajouts/retraits de rôles copient tout l'objet). */
+  function sessionPhotosLink(s){
+    var v = s && s.roles && s.roles.photosLink;
+    return (typeof v==="string" && /^https:\/\//i.test(v.trim())) ? v.trim() : "";
+  }
+  function sessionsWithPhotos(){
+    return sessionsSorted().filter(function(s){ return !!sessionPhotosLink(s); }).reverse();
   }
 
   /* Affiches CAMUSAT TALK : table Supabase séparée, sans lien avec les
@@ -2366,11 +2393,30 @@
         '<h2>Nos médias</h2>'+
         '<p>Découvrez les moments forts de CAMUSAT TALK : photos et vidéos des sessions.</p>'+
       '</div>'+
+      renderMediaSessionAlbums()+
       '<div class="media-filters">'+filters.map(function(f){
         return '<button type="button" class="dash-tab'+(state.mediaFilter===f.id?" active":"")+'" data-media-filter="'+f.id+'">'+f.label+'</button>';
       }).join("")+'</div>'+
       (list.length ? '<div class="media-grid">'+list.map(renderMediaCard).join("")+'</div>' : '<div class="empty-state">'+ICONS.empty+'<div>Aucun média disponible pour le moment.</div></div>')+
     '</section>';
+  }
+
+  // Albums photos des sessions (dossiers Drive) : affichés en tête de la page
+  // Média, uniquement pour les sessions dont un lien a été renseigné.
+  function renderMediaSessionAlbums(){
+    var list = sessionsWithPhotos();
+    if(!list.length) return "";
+    return '<div style="margin-bottom:30px">'+
+      '<h3 style="font-size:18px;margin:0 0 14px">Photos des sessions</h3>'+
+      '<div class="grid-cards">'+list.map(function(s){
+        return '<a class="talk-card" href="'+esc(sessionPhotosLink(s))+'" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">'+
+          '<div class="mc-top"><span class="theme-tag">Session #'+esc(s.sessionNumber||"—")+'</span></div>'+
+          '<h3 style="font-size:16px">'+esc(s.name||"Session")+'</h3>'+
+          '<div class="meta-row">'+ICONS.calendar+' '+fmtSessionDateTime(s.sessionDatetime)+'</div>'+
+          '<div class="meta-row" style="color:var(--red);font-weight:700">'+ICONS.download+' Voir et télécharger les photos</div>'+
+        '</a>';
+      }).join("")+'</div>'+
+    '</div>';
   }
 
   function renderMediaCard(m){
@@ -2678,6 +2724,16 @@
     return '<div class="empty-state">'+ICONS.empty+'<div>'+(state.adminUnlocked ? "Aucune session pour le moment. Créez la première session CAMUSAT TALK." : "Aucune session n'a encore été annoncée. Revenez bientôt.")+'</div></div>';
   }
 
+  function renderSessionPhotosBlock(s){
+    var link = sessionPhotosLink(s);
+    if(!link) return "";
+    return '<div class="photos-block">'+
+      '<div class="photos-block-icon">'+ICONS.camera+'</div>'+
+      '<div class="photos-block-text"><h3>Photos de la session</h3><p>Retrouvez-vous et téléchargez vos photos en pleine qualité.</p></div>'+
+      '<a class="btn btn-primary" href="'+esc(link)+'" target="_blank" rel="noopener">'+ICONS.download+' Voir et télécharger</a>'+
+    '</div>';
+  }
+
   function renderSessionDetail(id){
     var s = state.sessions.find(function(x){ return String(x.id)===String(id); });
     if(!s){
@@ -2706,6 +2762,7 @@
         '</div>'+
         (s.description ? '<div class="detail-block"><h4>Description</h4><p>'+esc(s.description)+'</p></div>' : '')+
       '</div>'+
+      renderSessionPhotosBlock(s)+
       '<div class="section-head" style="margin-bottom:16px">'+
         '<span class="kicker">Organisation</span>'+
         '<h3 style="margin:0;font-size:18px">Rôles de la session</h3>'+
@@ -3604,6 +3661,7 @@
             editField("sfDatetime","Date et heure",s?toLocalDatetimeInputValue(s.sessionDatetime):"","datetime-local")+
             editField("sfLocation","Lieu",s?s.location:"","text","full")+
             editField("sfTeamsLink","Lien Microsoft Teams (optionnel)",s?s.teamsLink:"","url","full")+
+            editField("sfPhotosLink","Lien du dossier photos — Google Drive, OneDrive… (optionnel)",s?sessionPhotosLink(s):"","url","full")+
             editTextarea("sfDescription","Description (optionnelle)",s?s.description:"","full")+
           '</div>'+
           '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px">'+
@@ -3651,6 +3709,15 @@
           toast("Champs incomplets", "Merci de remplir tous les champs (le lien Teams et la description sont optionnels).", true);
           return;
         }
+        var photosLink = document.getElementById("sfPhotosLink").value.trim();
+        if(photosLink && !/^https:\/\//i.test(photosLink)){
+          toast("Lien photos invalide", "Le lien doit commencer par https:// (copiez-le depuis le bouton « Partager » de Google Drive).", true);
+          return;
+        }
+        // Le lien photos vit dans la colonne JSON "roles" (voir sessionPhotosLink) :
+        // on relit la session à jour pour ne pas écraser un rôle modifié entre-temps.
+        var latest = s ? (state.sessions.find(function(x){ return String(x.id)===String(s.id); }) || s) : null;
+        data.roles = Object.assign({}, (latest && latest.roles) || emptySessionRoles(), {photosLink: photosLink});
         var btn = document.getElementById("btnSaveSession");
         btn.disabled = true; btn.textContent = "Enregistrement…";
         if(s){
