@@ -445,6 +445,45 @@
   .session-banner.is-finished p{color:#d6def5}
   .session-banner-done{background:#fff;color:var(--navy);border-radius:999px;padding:2px 10px;font-size:11px;letter-spacing:.04em}
 
+  /* ---------- Accueil : session programmée en grand ---------- */
+  .session-hero .hero-inner{grid-template-columns:1.25fr .75fr;padding:56px 24px 64px}
+  .session-hero .sh-status{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--red);padding:7px 16px;border-radius:999px;margin-bottom:18px;box-shadow:0 10px 24px -10px rgba(200,16,46,.7)}
+  .session-hero .sh-status .pulse{width:8px;height:8px;border-radius:50%;background:#fff;animation:sh-pulse 1.8s ease-in-out infinite}
+  @keyframes sh-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+  .session-hero h1{font-size:clamp(38px,6.6vw,68px);line-height:1.02;letter-spacing:-.02em;margin:0 0 14px}
+  .session-hero h1 em{font-style:normal;color:#ff8d98}
+  .session-hero .sh-theme{font-family:'Sora',sans-serif;font-weight:600;font-size:clamp(17px,2.2vw,22px);color:#ffd8de;margin:0 0 10px}
+  .session-hero .sh-meta{color:#c6cee2;font-size:15.5px;margin:0 0 28px;display:flex;flex-wrap:wrap;gap:6px 18px}
+  .session-hero .sh-meta span{display:inline-flex;align-items:center;gap:7px}
+  .session-hero .sh-date-card{background:#fff;color:var(--navy);border-radius:24px;padding:28px 26px;text-align:center;box-shadow:0 30px 60px -20px rgba(0,0,0,.5);position:relative}
+  .session-hero .sh-date-card .wd{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
+  .session-hero .sh-date-card .day{font-family:'Sora',sans-serif;font-weight:800;font-size:clamp(76px,10vw,112px);line-height:1;margin:6px 0 2px;font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+  .session-hero .sh-date-card .mo{font-family:'Sora',sans-serif;font-weight:700;font-size:20px;text-transform:capitalize}
+  .session-hero .sh-date-card .hr{display:inline-flex;align-items:center;gap:8px;margin-top:16px;background:var(--navy);color:#fff;font-weight:800;font-size:18px;padding:9px 20px;border-radius:999px}
+  .session-hero .sh-date-card .cd{margin-top:14px;font-size:13px;font-weight:700;color:var(--text-soft)}
+  .session-hero .btn-big{padding:15px 28px;font-size:16px}
+  @media (max-width:860px){
+    .session-hero .hero-inner{grid-template-columns:1fr;padding:40px 20px 48px;gap:30px}
+    .session-hero .sh-date-card{padding:22px 20px}
+    .session-hero .sh-date-card .day{font-size:84px}
+  }
+  .agenda-list{display:flex;flex-direction:column;gap:14px;counter-reset:ag}
+  .agenda-item{display:grid;grid-template-columns:56px 1fr auto;gap:18px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s,transform .15s}
+  .agenda-item:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+  .agenda-item:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+  .agenda-num{width:56px;height:56px;border-radius:16px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:800;font-size:22px}
+  .agenda-item:first-child .agenda-num{background:var(--red)}
+  .agenda-body{min-width:0}
+  .agenda-body h3{font-size:clamp(16px,2vw,19px);margin:4px 0 4px;line-height:1.3}
+  .agenda-body p{margin:0;font-size:14px;color:var(--text-soft)}
+  .agenda-who{font-weight:700;color:var(--navy)}
+  .agenda-side{text-align:right;font-size:13px;color:var(--text-soft);white-space:nowrap}
+  @media (max-width:640px){
+    .agenda-item{grid-template-columns:44px 1fr;gap:14px;padding:16px}
+    .agenda-num{width:44px;height:44px;border-radius:13px;font-size:18px}
+    .agenda-side{grid-column:2;text-align:left;white-space:normal}
+  }
+
   /* ---------- Affiches ---------- */
   .poster-home-card{display:flex;align-items:center;gap:18px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 30px;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s,transform .15s}
   .poster-home-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
@@ -2256,8 +2295,12 @@
     var top3 = itemsSorted().slice(0,3);
     var sessionBannerHtml = renderNextSessionBanner();
 
+    var upSession = nextUpcomingSession();
+    var heroHtml = upSession ? renderSessionHero(upSession) : '';
+    var agendaHtml = upSession ? renderAgenda(upSession) : '';
+
     return ''+
-    '<div class="hero">'+
+    (upSession ? heroHtml : '<div class="hero">'+
       '<div class="hero-inner">'+
         '<div>'+
           '<span class="eyebrow"><span class="dot"></span> Programme interne Camusat Sénégal</span>'+
@@ -2282,10 +2325,11 @@
           (top3.length===0 ? '<div class="mini-card"><h4>Votre sujet apparaîtra ici</h4><p>Soyez le premier à proposer un TALK</p></div>' : '') +
         '</div>'+
       '</div>'+
-    '</div>'+
+    '</div>')+
 
+    agendaHtml+
     sessionBannerHtml+
-    '<section class="wrap"'+(sessionBannerHtml?' style="padding-top:0"':'')+'>'+
+    '<section class="wrap"'+((sessionBannerHtml||agendaHtml)?' style="padding-top:0"':'')+'>'+
       '<div class="poster-home-card" data-nav="#/affiches" role="button" tabindex="0" aria-label="Voir les affiches CAMUSAT TALK">'+
         '<div class="poster-home-icon">'+ICONS.image+'</div>'+
         '<div><h3>Nos affiches</h3><p>Retrouvez les affiches des sessions CAMUSAT TALK, en un coup d\'œil.</p></div>'+
@@ -2313,10 +2357,76 @@
     '</section>';
   }
 
+  function pad2(n){ return (n<10?"0":"")+n; }
+  // Grand message d'accueil quand une session est programmée.
+  function renderSessionHero(sess){
+    var d = new Date(sess.sessionDatetime);
+    var wd = d.toLocaleDateString("fr-FR",{weekday:"long"});
+    var mo = d.toLocaleDateString("fr-FR",{month:"long"})+" "+d.getFullYear();
+    var days = Math.ceil((d.getTime()-Date.now())/86400000);
+    var cd = days<=0 ? "C'est aujourd'hui !" : (days===1 ? "C'est demain !" : "Dans "+days+" jours");
+    var num = sess.sessionNumber ? String(sess.sessionNumber).replace(/^#/,"") : "";
+    if(/^\d$/.test(num)) num = "0"+num;
+    var meta = [];
+    if(sess.location) meta.push('<span>'+ICONS.mentor.replace('<circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.2-4 4-6 7-6s5.8 2 7 6" stroke-linecap="round"/>','<path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>')+' '+esc(sess.location)+'</span>');
+    if(sess.teamsLink) meta.push('<span>'+ICONS.calendar+' Également en ligne · Microsoft Teams</span>');
+    return '<div class="hero session-hero">'+
+      '<div class="hero-inner">'+
+        '<div>'+
+          '<span class="sh-status"><span class="pulse"></span> Programmée</span>'+
+          '<h1>Session #'+esc(num||"—")+'<br><em>programmée</em></h1>'+
+          (sess.name ? '<p class="sh-theme">'+esc(sess.name)+'</p>' : '')+
+          '<p class="sh-meta"><span>'+ICONS.calendar+' '+esc(fmtSessionDateTime(sess.sessionDatetime))+'</span>'+meta.join("")+'</p>'+
+          '<div class="hero-actions">'+
+            '<button class="btn btn-primary btn-big" data-nav="#/sessions/'+esc(sess.id)+'">Voir la session</button>'+
+            '<button class="btn btn-secondary btn-big" data-nav="#/proposer">Proposer un sujet</button>'+
+          '</div>'+
+        '</div>'+
+        '<div class="sh-date-card" data-nav="#/sessions/'+esc(sess.id)+'" role="button" tabindex="0" aria-label="Voir la session du '+esc(fmtSessionDateTime(sess.sessionDatetime))+'" style="cursor:pointer">'+
+          '<div class="wd">'+esc(wd)+'</div>'+
+          '<div class="day">'+d.getDate()+'</div>'+
+          '<div class="mo">'+esc(mo)+'</div>'+
+          '<div class="hr">'+ICONS.clock.replace('width="14" height="14"','width="18" height="18"')+' '+pad2(d.getHours())+'h'+pad2(d.getMinutes())+'</div>'+
+          '<div class="cd">'+cd+'</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }
+
+  // « Au programme » : les sujets à l'état « Présentation programmée », dans
+  // l'ordre où ils ont été saisis (le premier saisi passe en premier).
+  function renderAgenda(sess){
+    var list = state.items.filter(function(it){ return it.status==="programmee"; })
+      .sort(function(a,b){ return (a.createdAt||"").localeCompare(b.createdAt||""); });
+    if(!list.length) return "";
+    return '<section class="wrap">'+
+      '<div class="section-head" style="margin-bottom:26px">'+
+        '<span class="kicker">Au programme</span>'+
+        '<h2>Les sujets de la session #'+esc(String(sess.sessionNumber||"").replace(/^#/,"").replace(/^(\d)$/,"0$1"))+'</h2>'+
+        '<p>Dans l\'ordre de passage. Cliquez sur un sujet pour en voir le détail.</p>'+
+      '</div>'+
+      '<div class="agenda-list">'+
+      list.map(function(it,idx){
+        var th = themeById(it.theme);
+        return '<div class="agenda-item" data-detail="'+esc(it.id)+'" role="button" tabindex="0" aria-label="Voir le détail de '+esc(it.title)+'">'+
+          '<div class="agenda-num">'+(idx+1)+'</div>'+
+          '<div class="agenda-body">'+
+            '<span class="theme-tag"><span class="dot" style="background:'+th.color+'"></span>'+esc(th.label)+'</span>'+
+            '<h3>'+esc(it.title)+'</h3>'+
+            '<p><span class="agenda-who">'+esc(it.presenterName||"")+'</span>'+(it.mentorName?' · mentor '+esc(it.mentorName):'')+'</p>'+
+          '</div>'+
+          '<div class="agenda-side">'+(it.duration?ICONS.clock+' '+esc(it.duration):'')+'</div>'+
+        '</div>';
+      }).join("")+
+      '</div>'+
+    '</section>';
+  }
+
   function renderNextSessionBanner(){
     // Session à venir en priorité ; sinon, la dernière session passée reste
     // visible sur l'accueil avec la mention « Terminée » (au lieu de disparaître).
     var s = nextUpcomingSession();
+    if(s) return ""; // la session à venir est déjà affichée en grand (renderSessionHero)
     var finished = false;
     if(!s){
       var past = sessionsSorted().filter(function(x){ return x.sessionDatetime; });
