@@ -525,6 +525,7 @@
   /* ---------- Médias (photos + vidéos YouTube) ---------- */
   .media-filters{display:flex;gap:8px;margin-bottom:26px;flex-wrap:wrap}
   .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+  @media (max-width:640px){ .media-grid.is-compact{grid-template-columns:repeat(2,1fr);gap:12px} .media-grid.is-compact .media-desc{display:none} .media-grid.is-compact .media-body{padding:10px 12px} .media-grid.is-compact .media-body h4{font-size:13px} }
   .media-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s,transform .15s;display:flex;flex-direction:column}
   .media-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
   .media-card:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
@@ -2297,7 +2298,7 @@
 
     var upSession = nextUpcomingSession();
     var heroHtml = upSession ? renderSessionHero(upSession) : '';
-    var agendaHtml = upSession ? renderAgenda(upSession) : '';
+    var agendaHtml = upSession ? renderAgenda(upSession, publishedMedias().length>0) : '';
 
     return ''+
     (upSession ? heroHtml : '<div class="hero">'+
@@ -2327,6 +2328,7 @@
       '</div>'+
     '</div>')+
 
+    (upSession ? renderHomeMediaSection(true) : '')+
     agendaHtml+
     sessionBannerHtml+
     '<section class="wrap"'+((sessionBannerHtml||agendaHtml)?' style="padding-top:0"':'')+'>'+
@@ -2336,7 +2338,7 @@
         '<span class="arrow" aria-hidden="true" style="font-size:20px;font-weight:700">→</span>'+
       '</div>'+
     '</section>'+
-    renderHomeMediaSection()+
+    (upSession ? '' : renderHomeMediaSection())+
     '<section class="wrap">'+
       '<div class="section-head">'+
         '<span class="kicker">Comment ça marche</span>'+
@@ -2395,11 +2397,11 @@
 
   // « Au programme » : les sujets à l'état « Présentation programmée », dans
   // l'ordre où ils ont été saisis (le premier saisi passe en premier).
-  function renderAgenda(sess){
+  function renderAgenda(sess, afterMedia){
     var list = state.items.filter(function(it){ return it.status==="programmee"; })
       .sort(function(a,b){ return (a.createdAt||"").localeCompare(b.createdAt||""); });
     if(!list.length) return "";
-    return '<section class="wrap">'+
+    return '<section class="wrap"'+(afterMedia?' style="padding-top:0"':'')+'>'+
       '<div class="section-head" style="margin-bottom:26px">'+
         '<span class="kicker">Au programme</span>'+
         '<h2>Les sujets de la session #'+esc(String(sess.sessionNumber||"").replace(/^#/,"").replace(/^(\d)$/,"0$1"))+'</h2>'+
@@ -2448,15 +2450,27 @@
 
   // N'apparaît sur l'accueil que s'il existe au moins un média publié — pas
   // de section vide tant qu'aucune photo/vidéo n'a été ajoutée.
-  function renderHomeMediaSection(){
-    var list = publishedMedias().slice(0,6);
+  function renderHomeMediaSection(highlights){
+    var list = publishedMedias().slice(0, highlights ? 4 : 6);
     if(!list.length) return "";
-    return '<section class="wrap" style="padding-top:0">'+
+    var head;
+    if(highlights){
+      // Session à venir : la galerie devient « Temps forts de la session précédente »
+      // (preuve que la précédente a bien fonctionné), placée avant le programme.
+      var now = new Date().toISOString();
+      var past = sessionsSorted().filter(function(x){ return x.sessionDatetime && x.sessionDatetime < now; });
+      var last = past.length ? past[past.length-1] : null;
+      var n = last && last.sessionNumber ? String(last.sessionNumber).replace(/^#/,"").replace(/^(\d)$/,"0$1") : "";
+      head = '<div><span class="kicker">Souvenirs</span><h2 style="margin-bottom:0">Temps forts de la session'+(n?' #'+esc(n):' précédente')+'</h2><p style="margin:6px 0 0">Une première réussie : revivez les meilleurs moments de CAMUSAT TALK.</p></div>';
+    } else {
+      head = '<div><span class="kicker">Galerie</span><h2 style="margin-bottom:0">Nos médias</h2><p style="margin:6px 0 0">Découvrez les moments forts de CAMUSAT TALK.</p></div>';
+    }
+    return '<section class="wrap"'+(highlights?'':' style="padding-top:0"')+'>'+
       '<div class="section-head" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:26px">'+
-        '<div><span class="kicker">Galerie</span><h2 style="margin-bottom:0">Nos médias</h2><p style="margin:6px 0 0">Découvrez les moments forts de CAMUSAT TALK.</p></div>'+
+        head+
         '<button type="button" class="btn btn-outline-navy btn-sm" data-nav="#/media">Voir tous les médias →</button>'+
       '</div>'+
-      '<div class="media-grid">'+list.map(renderMediaCard).join("")+'</div>'+
+      '<div class="media-grid'+(highlights?' is-compact':'')+'">'+list.map(renderMediaCard).join("")+'</div>'+
     '</section>';
   }
 
