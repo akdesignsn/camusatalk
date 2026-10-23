@@ -477,6 +477,12 @@
   .session-hero .sh-date-card .cd{margin-top:14px;font-size:13px;font-weight:700;color:var(--text-soft)}
   .session-hero .sh-count{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;font-family:'Sora',sans-serif;font-weight:800;font-size:clamp(18px,2.6vw,24px);padding:10px 22px;border-radius:999px;margin:0 0 30px}
   .session-hero .sh-count-dot{width:10px;height:10px;border-radius:50%;background:#ff8d98;box-shadow:0 0 0 4px rgba(255,141,152,.25)}
+  /* Photos des présentateurs en fond de la bannière « session programmée » */
+  .session-hero::before{content:"";position:absolute;top:50%;right:max(24px,calc((100% - 1180px)/2 + 24px));transform:translateY(-50%);width:min(470px,42vw);aspect-ratio:470/510;background:url(hero-presentateurs.webp) center/contain no-repeat;pointer-events:none;z-index:0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 18%);mask-image:linear-gradient(90deg,transparent 0,#000 18%)}
+  .session-hero .hero-inner{z-index:1}
+  @media (max-width:900px){
+    .session-hero::before{width:min(360px,86vw);top:auto;bottom:-30px;right:-40px;transform:none;opacity:.13;-webkit-mask-image:none;mask-image:none}
+  }
   .session-hero .btn-big{padding:15px 28px;font-size:16px}
   @media (max-width:860px){
     .session-hero .hero-inner{grid-template-columns:1fr;padding:40px 20px 48px;gap:30px}
