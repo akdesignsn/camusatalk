@@ -1897,6 +1897,7 @@
     // Lien court et permanent (voir sessionForGuestQR) : à imprimer une
     // seule fois sur un QR code, il reste valable d'une session à l'autre.
     if(h.indexOf("#/guest")===0) return "guest";
+    if(roleShortcutKey()) return "roleshortcut";
     return "accueil";
   }
   function sessionIdFromHash(){
@@ -2315,6 +2316,7 @@
     else if(route==="dashboard") view.innerHTML = renderDashboard();
     else if(route==="fiche") view.innerHTML = renderFicheRoute();
     else if(route==="guest") view.innerHTML = renderGuestShortcut();
+    else if(route==="roleshortcut") view.innerHTML = renderRoleShortcut();
     var routeKey = route + (route==="sessions" ? ":"+(sessionIdFromHash()||"") : "") + (route==="fiche" ? ":"+location.hash : "");
     if(routeKey !== lastRenderedRouteKey){
       window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
@@ -3408,6 +3410,38 @@
   // sessionForGuestQR) : "#/guest" redirige toujours vers une fiche Guest
   // neuve pour la session actuellement pertinente, sans jamais coder l'ID
   // d'une session précise dans le QR code lui-même.
+  // Liens courts et permanents par rôle : "#/grammarian", "#/timekeeper",
+  // "#/posture-visualizer", "#/evaluateur". Ils ouvrent la fiche du rôle pour
+  // la session en cours, ou pour la prochaine session si elle a lieu dans les
+  // 14 jours (on remplit souvent sa fiche juste avant la séance).
+  var ROLE_SHORTCUTS = {
+    "grammarian":"grammarian", "timekeeper":"timekeeper",
+    "posture-visualizer":"posture_visualizer", "evaluateur":"evaluateur"
+  };
+  function roleShortcutKey(){
+    var m = (location.hash||"").match(/^#\/([a-z-]+)\/?$/);
+    return m && ROLE_SHORTCUTS[m[1]] ? ROLE_SHORTCUTS[m[1]] : null;
+  }
+  function sessionForRoleLink(){
+    var next = nextUpcomingSession();
+    if(next && new Date(next.sessionDatetime).getTime() - Date.now() <= 14*86400000) return next;
+    return sessionForGuestQR();
+  }
+  function renderRoleShortcut(){
+    var key = roleShortcutKey();
+    var s = sessionForRoleLink();
+    if(!s){
+      return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Aucune session CAMUSAT TALK n\'est encore programmée. Revenez un peu plus tard.</div>'+
+        '<button type="button" class="btn btn-outline-navy" data-nav="#/" style="margin-top:18px">← Retour à l\'accueil</button></div></section>';
+    }
+    // Rôles « à liste » (Grammarian, Évaluateur, Posture Visualizer) : le lien
+    // court ouvre directement une NOUVELLE fiche vierge (après la porte
+    // « Votre nom »), pas la liste des fiches déjà remplies. Timekeeper :
+    // fiche unique, gérée par la route elle-même.
+    var suffix = (FICHE_SCOPE[key]==="session_intervenant") ? "/new" : "";
+    setTimeout(function(){ location.hash = "#/fiche/s/"+encodeURIComponent(s.id)+"/"+encodeURIComponent(key)+suffix; }, 0);
+    return '<section class="wrap"><div class="empty-state">'+ICONS.empty+'<div>Redirection…</div></div></section>';
+  }
   function renderGuestShortcut(){
     var s = sessionForGuestQR();
     if(!s){
