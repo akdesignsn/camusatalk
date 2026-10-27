@@ -3480,14 +3480,10 @@
         // seulement la porte d'entrée "Votre nom" (qui identifie qui remplit),
         // redemandée ici aussi si elle n'a pas déjà été validée pour ce rôle
         // (ex. arrivée directe par un lien, ou rechargement de la page).
-        var newFicheGateKey = info.sessionId+"::"+info.roleKey;
-        if(state.ficheGateConfirmedFor !== newFicheGateKey){
-          return renderFicheNameGate(s, tpl);
-        }
+        // Plus de porte d'entrée : le nom de la personne qui remplit se saisit
+        // directement dans la fiche (champ « Prénom et nom »), pré-rempli si
+        // elle l'a déjà donné dans « Mes missions ».
         var freshName = (state.myNameDraft||"").trim();
-        if(!freshName){
-          return renderFicheNameGate(s, tpl);
-        }
         var blankDraft = {id:null, sessionId:s.id, roleKey:info.roleKey, participantName:freshName, intervenantName:"", status:"a_remplir", formData:{}};
         return renderFicheEditorPage(s, tpl, blankDraft, null);
       }
@@ -3512,14 +3508,7 @@
       if(existingTk){
         return renderFicheEditorPage(s, tpl, existingTk, null);
       }
-      var ficheGateKey = info.sessionId+"::"+info.roleKey;
-      if(state.ficheGateConfirmedFor !== ficheGateKey){
-        return renderFicheNameGate(s, tpl);
-      }
       var trimmed = (state.myNameDraft!==null ? state.myNameDraft : "").trim();
-      if(!trimmed){
-        return renderFicheNameGate(s, tpl);
-      }
       var draft = {id:null, sessionId:s.id, roleKey:info.roleKey, participantName:trimmed, intervenantName:null, status:"a_remplir", formData:{}};
       return renderFicheEditorPage(s, tpl, draft, null);
     }
@@ -3629,6 +3618,17 @@
     return "#/sessions/"+encodeURIComponent(fiche.sessionId);
   }
 
+  function participantLabelFor(roleKey){
+    var m = {
+      evaluateur: "Prénom et nom de l'évaluateur / de l'évaluatrice",
+      grammarian: "Prénom et nom du Grammarian",
+      posture_visualizer: "Prénom et nom du Posture Visualizer",
+      timekeeper: "Prénom et nom du Timekeeper",
+      guest: "Votre prénom et nom"
+    };
+    return m[roleKey] || "Prénom et nom";
+  }
+
   function renderFicheEditorPage(s, tpl, fiche, proposition){
     var draftKey = fiche.id || ("new:"+(fiche.sessionId||fiche.propositionId)+":"+fiche.roleKey+":"+(fiche.intervenantName||""));
     var dataSource = (state.ficheDraft && state.ficheDraft.key===draftKey) ? state.ficheDraft.data : cloneJson(fiche.formData||{});
@@ -3648,7 +3648,7 @@
     var metaItems = [];
     if(s) metaItems.push(["Session", esc(s.name||"—")+' <span class="dt-value-sub">('+fmtSessionDateTime(s.sessionDatetime)+')</span>']);
     if(proposition) metaItems.push(["Proposition", esc(proposition.title||"—")]);
-    metaItems.push([tpl.label, esc(fiche.participantName||"—")]);
+    if(fiche.roleKey==="mentor") metaItems.push([tpl.label, esc(fiche.participantName||"—")]);
     if(fiche.roleKey==="mentor") metaItems.push(["Présentateur / Présentatrice", esc(fiche.intervenantName||"—")]);
 
     return '<section class="wrap fiche-editor-page">'+
@@ -3671,10 +3671,16 @@
       '</div>'+
       '<form id="ficheFormRoot"'+(locked?' data-locked="1"':'')+'>'+
         '<fieldset'+(locked?' disabled':'')+' style="border:none;padding:0;margin:0">'+
+          (fiche.roleKey!=="mentor" ?
+            '<div class="field" style="margin-bottom:16px;max-width:420px">'+
+              '<label for="ficheParticipantInput">'+esc(participantLabelFor(fiche.roleKey))+'</label>'+
+              '<input type="text" id="ficheParticipantInput" placeholder="Prénom et nom" autocomplete="off" value="'+esc(fiche.participantName||"")+'">'+
+            '</div>'
+            : '')+
           (needsIntervenantField ?
             '<div class="field" style="margin-bottom:22px;max-width:420px">'+
-              '<label for="ficheIntervenantInput">Intervenant(e) observé(e)</label>'+
-              '<input type="text" id="ficheIntervenantInput" placeholder="Nom et prénom" autocomplete="off" value="'+esc(fiche.intervenantName||"")+'">'+
+              '<label for="ficheIntervenantInput">Prénom et nom du présentateur / de la présentatrice</label>'+
+              '<input type="text" id="ficheIntervenantInput" placeholder="Prénom et nom" autocomplete="off" value="'+esc(fiche.intervenantName||"")+'">'+
             '</div>'
             : '')+
           renderFicheFields(tpl, dataSource)+
@@ -3709,6 +3715,17 @@
     // colonne dédiée "intervenant_name", comme avant.
     var intervenantInput = document.getElementById("ficheIntervenantInput");
     if(intervenantInput) d.fiche.intervenantName = intervenantInput.value.trim();
+    var participantInput = document.getElementById("ficheParticipantInput");
+    if(participantInput) d.fiche.participantName = participantInput.value.trim();
+    // Les noms sont obligatoires : on ne crée pas de fiche anonyme.
+    if(participantInput && !d.fiche.participantName){
+      toast("Prénom et nom manquants", "Indiquez votre prénom et nom en haut de la fiche.", true);
+      participantInput.focus(); return;
+    }
+    if(status==="termine" && intervenantInput && !d.fiche.intervenantName){
+      toast("Présentateur manquant", "Indiquez le prénom et nom du présentateur avant de valider.", true);
+      intervenantInput.focus(); return;
+    }
 
     function afterSaved(mergedFiche){
       d.fiche = mergedFiche;
@@ -3720,6 +3737,7 @@
     if(d.fiche.id){
       var payload = { formData: formData };
       if(intervenantInput) payload.intervenantName = d.fiche.intervenantName;
+      if(participantInput) payload.participantName = d.fiche.participantName;
       payload.status = status || (d.fiche.status==="termine" ? "termine" : "en_cours");
       if(payload.status==="termine" && !d.fiche.submittedAt) payload.submittedAt = new Date().toISOString();
       updateFiche(d.fiche.id, payload, function(success){
@@ -3764,6 +3782,8 @@
     var d = state.ficheDraft;
     var el = document.getElementById("ficheIntervenantInput");
     if(d && el) d.fiche.intervenantName = el.value;
+    var pe = document.getElementById("ficheParticipantInput");
+    if(d && pe) d.fiche.participantName = pe.value;
   }
 
   function bindFicheRouteEvents(){
